@@ -20,8 +20,8 @@ class vistaModelo
                 $palabras_nivel2 = ['inicio', 'programas-estudio', 'semestres'];
                 if (in_array($pagina['1'], $palabras_nivel2)) {
 
-                    if (is_file("./src/view/" . $vista . "_" . $pagina['1'] . ".php")) {
-                        $contenido = "./src/view/" . $vista . "_" . $pagina['1'] . ".php";
+                    if (is_file("./src/view/" . $vista . "-" . $pagina['1'] . ".php")) {
+                        $contenido = "./src/view/" . $vista . "-" . $pagina['1'] . ".php";
                     } else {
                         $contenido = "404";
                     }
@@ -33,8 +33,8 @@ class vistaModelo
                 $palabras_nivel2 = ['inicio', 'unidades-didacticas', 'calificaciones'];
                 if (in_array($pagina['1'], $palabras_nivel2)) {
 
-                    if (is_file("./src/view/" . $vista . "_" . $pagina['1'] . ".php")) {
-                        $contenido = "./src/view/" . $vista . "_" . $pagina['1'] . ".php";
+                    if (is_file("./src/view/" . $vista . "-" . $pagina['1'] . ".php")) {
+                        $contenido = "./src/view/" . $vista . "-" . $pagina['1'] . ".php";
                     } else {
                         $contenido = "404";
                     }
@@ -43,11 +43,11 @@ class vistaModelo
                 }
             } elseif ((isset($pagina['1']) && $pagina['1'] != '') && $pagina['0'] == 'biblioteca') {
                 // palabras permitidas para biblioteca
-                $palabras_nivel2 = ['inicio', 'libros', 'lecturas'];
+                $palabras_nivel2 = ['libros', 'favoritos', 'detalle-libro', 'lectura', 'perfil', 'admin','vista-libros','nuevo-libro', 'editar-libro','asignaciones','usuarios','lecturas','accesos'];
                 if (in_array($pagina['1'], $palabras_nivel2)) {
 
-                    if (is_file("./src/view/" . $vista . "_" . $pagina['1'] . ".php")) {
-                        $contenido = "./src/view/" . $vista . "_" . $pagina['1'] . ".php";
+                    if (is_file("./src/view/" . $vista . "-" . $pagina['1'] . ".php")) {
+                        $contenido = "./src/view/" . $vista . "-" . $pagina['1'] . ".php";
                     } else {
                         $contenido = "404";
                     }
@@ -59,8 +59,8 @@ class vistaModelo
                 $palabras_nivel2 = ['inicio', 'tutoria', 'asistencia'];
                 if (in_array($pagina['1'], $palabras_nivel2)) {
 
-                    if (is_file("./src/view/" . $vista . "_" . $pagina['1'] . ".php")) {
-                        $contenido = "./src/view/" . $vista . "_" . $pagina['1'] . ".php";
+                    if (is_file("./src/view/" . $vista . "-" . $pagina['1'] . ".php")) {
+                        $contenido = "./src/view/" . $vista . "-" . $pagina['1'] . ".php";
                     } else {
                         $contenido = "404";
                     }
@@ -72,8 +72,8 @@ class vistaModelo
                 $palabras_nivel2 = ['inicio', 'postulantes', 'aulas'];
                 if (in_array($pagina['1'], $palabras_nivel2)) {
 
-                    if (is_file("./src/view/" . $vista . "_" . $pagina['1'] . ".php")) {
-                        $contenido = "./src/view/" . $vista . "_" . $pagina['1'] . ".php";
+                    if (is_file("./src/view/" . $vista . "-" . $pagina['1'] . ".php")) {
+                        $contenido = "./src/view/" . $vista . "-" . $pagina['1'] . ".php";
                     } else {
                         $contenido = "404";
                     }
@@ -85,8 +85,8 @@ class vistaModelo
                 $palabras_nivel2 = ['inicio', 'calificaciones', 'historial'];
                 if (in_array($pagina['1'], $palabras_nivel2)) {
 
-                    if (is_file("./src/view/" . $vista . "_" . $pagina['1'] . ".php")) {
-                        $contenido = "./src/view/" . $vista . "_" . $pagina['1'] . ".php";
+                    if (is_file("./src/view/" . $vista . "-" . $pagina['1'] . ".php")) {
+                        $contenido = "./src/view/" . $vista . "-" . $pagina['1'] . ".php";
                     } else {
                         $contenido = "404";
                     }
