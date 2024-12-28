@@ -10,12 +10,12 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
     <!-- App favicon -->
-    <link rel="shortcut icon" href="../src/view/pp/assets/images/favicon.ico">
+    <link rel="shortcut icon" href="./src/view/pp/assets/images/favicon.ico">
 
     <!-- App css -->
-    <link href="../src/view/pp/assets/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
-    <link href="../src/view/pp/assets/css/icons.min.css" rel="stylesheet" type="text/css" />
-    <link href="../src/view/pp/assets/css/theme.min.css" rel="stylesheet" type="text/css" />
+    <link href="./src/view/pp/assets/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="./src/view/pp/assets/css/icons.min.css" rel="stylesheet" type="text/css" />
+    <link href="./src/view/pp/assets/css/theme.min.css" rel="stylesheet" type="text/css" />
 
 </head>
 

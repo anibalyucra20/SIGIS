@@ -27,13 +27,13 @@
 
 
      <!-- jQuery  -->
-     <script src="../src/view/pp/assets/js/jquery.min.js"></script>
-     <script src="../src/view/pp/assets/js/bootstrap.bundle.min.js"></script>
-     <script src="../src/view/pp/assets/js/waves.js"></script>
-     <script src="../src/view/pp/assets/js/simplebar.min.js"></script>
+     <script src="./src/view/pp/assets/js/jquery.min.js"></script>
+     <script src="./src/view/pp/assets/js/bootstrap.bundle.min.js"></script>
+     <script src="./src/view/pp/assets/js/waves.js"></script>
+     <script src="./src/view/pp/assets/js/simplebar.min.js"></script>
 
      <!-- App js -->
-     <script src="../src/view/pp/assets/js/theme.js"></script>
+     <script src="./src/view/pp/assets/js/theme.js"></script>
 
      </body>
 
