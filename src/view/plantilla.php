@@ -10,9 +10,9 @@ if ($vista=="login" || $vista == "404") {
     require_once "./src/view/".$vista.".php";
 }else {
     
-    //include "./src/view/include/header.php";
+    include "./src/view/include/header.php";
     include $vista;
-    //include "./src/view/include/footer.php";
+    include "./src/view/include/footer.php";
 }
 
 ?>

@@ -5,7 +5,7 @@ class vistaModelo
 
     protected static function obtener_vista($vista)
     {
-        $palabras_permitidas_n1 = ['administracion', 'academico', 'biblioteca', 'tutoria', 'admision', 'egresados'];
+        $palabras_permitidas_n1 = ['admin', 'academico', 'biblioteca', 'tutoria', 'admision', 'egresados'];
         /*if(!isset($_SESSION['sesion_ventas_id'])) {
             return "login";
         }*/
@@ -15,9 +15,9 @@ class vistaModelo
         if (in_array($vista, $palabras_permitidas_n1)) {
 
             $pagina = explode("/", $_GET['views']);
-            if ((isset($pagina['1']) && $pagina['1'] != '') && $pagina['0'] == 'administracion') {
+            if ((isset($pagina['1']) && $pagina['1'] != '') && $pagina['0'] == 'admin') {
                 // palabras permitidas para administracion
-                $palabras_nivel2 = ['inicio', 'programas-estudio', 'semestres'];
+                $palabras_nivel2 = ['informacion', 'periodo-acedemico', 'docentes', 'sedes', 'programas-estudio', 'modulos-formativos', 'semestre', 'editar-semestre', 'unidades-didacticas', 'editar-unidad-didactica', 'competencias', 'editar-competencia', 'indicador-logro-competencia', 'capacidades', 'editar-capacidad', 'indicador-logro-capacidad', 'sistema'];
                 if (in_array($pagina['1'], $palabras_nivel2)) {
 
                     if (is_file("./src/view/" . $vista . "-" . $pagina['1'] . ".php")) {
@@ -30,7 +30,7 @@ class vistaModelo
                 }
             } elseif ((isset($pagina['1']) && $pagina['1'] != '') && $pagina['0'] == 'academico') {
                 // palabras permitidas para academico
-                $palabras_nivel2 = ['inicio', 'unidades-didacticas', 'calificaciones'];
+                $palabras_nivel2 = ['unidades-didacticas', 'calificaciones'];
                 if (in_array($pagina['1'], $palabras_nivel2)) {
 
                     if (is_file("./src/view/" . $vista . "-" . $pagina['1'] . ".php")) {
@@ -56,7 +56,7 @@ class vistaModelo
                 }
             } elseif ((isset($pagina['1']) && $pagina['1'] != '') && $pagina['0'] == 'tutoria') {
                 // palabras permitidas para tutoria
-                $palabras_nivel2 = ['inicio', 'tutoria', 'asistencia'];
+                $palabras_nivel2 = ['tutoria', 'asistencia'];
                 if (in_array($pagina['1'], $palabras_nivel2)) {
 
                     if (is_file("./src/view/" . $vista . "-" . $pagina['1'] . ".php")) {
@@ -69,7 +69,7 @@ class vistaModelo
                 }
             } elseif ((isset($pagina['1']) && $pagina['1'] != '') && $pagina['0'] == 'admision') {
                 // palabras permitidas para admision
-                $palabras_nivel2 = ['inicio', 'postulantes', 'aulas'];
+                $palabras_nivel2 = ['postulantes', 'aulas'];
                 if (in_array($pagina['1'], $palabras_nivel2)) {
 
                     if (is_file("./src/view/" . $vista . "-" . $pagina['1'] . ".php")) {
@@ -82,7 +82,7 @@ class vistaModelo
                 }
             } elseif ((isset($pagina['1']) && $pagina['1'] != '') && $pagina['0'] == 'egresados') {
                 // palabras permitidas para egresados
-                $palabras_nivel2 = ['inicio', 'calificaciones', 'historial'];
+                $palabras_nivel2 = ['calificaciones', 'historial'];
                 if (in_array($pagina['1'], $palabras_nivel2)) {
 
                     if (is_file("./src/view/" . $vista . "-" . $pagina['1'] . ".php")) {
