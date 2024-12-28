@@ -15,7 +15,7 @@ class vistaModelo
         if (in_array($vista, $palabras_permitidas_n1)) {
 
             $pagina = explode("/", $_GET['views']);
-            if (isset($pagina['1']) && $pagina['0'] == 'administracion') {
+            if ((isset($pagina['1']) && $pagina['1'] != '') && $pagina['0'] == 'administracion') {
                 // palabras permitidas para administracion
                 $palabras_nivel2 = ['inicio', 'programas-estudio', 'semestres'];
                 if (in_array($pagina['1'], $palabras_nivel2)) {
@@ -28,8 +28,7 @@ class vistaModelo
                 } else {
                     $contenido = "404";
                 }
-                
-            } elseif (isset($pagina['1']) && $pagina['0'] == 'academico') {
+            } elseif ((isset($pagina['1']) && $pagina['1'] != '') && $pagina['0'] == 'academico') {
                 // palabras permitidas para academico
                 $palabras_nivel2 = ['inicio', 'unidades-didacticas', 'calificaciones'];
                 if (in_array($pagina['1'], $palabras_nivel2)) {
@@ -42,7 +41,7 @@ class vistaModelo
                 } else {
                     $contenido = "404";
                 }
-            } elseif (isset($pagina['1']) && $pagina['0'] == 'biblioteca') {
+            } elseif ((isset($pagina['1']) && $pagina['1'] != '') && $pagina['0'] == 'biblioteca') {
                 // palabras permitidas para biblioteca
                 $palabras_nivel2 = ['inicio', 'libros', 'lecturas'];
                 if (in_array($pagina['1'], $palabras_nivel2)) {
@@ -55,7 +54,7 @@ class vistaModelo
                 } else {
                     $contenido = "404";
                 }
-            }elseif (isset($pagina['1']) && $pagina['0'] == 'tutoria') {
+            } elseif ((isset($pagina['1']) && $pagina['1'] != '') && $pagina['0'] == 'tutoria') {
                 // palabras permitidas para tutoria
                 $palabras_nivel2 = ['inicio', 'tutoria', 'asistencia'];
                 if (in_array($pagina['1'], $palabras_nivel2)) {
@@ -68,7 +67,7 @@ class vistaModelo
                 } else {
                     $contenido = "404";
                 }
-            }elseif (isset($pagina['1']) && $pagina['0'] == 'admision') {
+            } elseif ((isset($pagina['1']) && $pagina['1'] != '') && $pagina['0'] == 'admision') {
                 // palabras permitidas para admision
                 $palabras_nivel2 = ['inicio', 'postulantes', 'aulas'];
                 if (in_array($pagina['1'], $palabras_nivel2)) {
@@ -81,7 +80,7 @@ class vistaModelo
                 } else {
                     $contenido = "404";
                 }
-            }elseif (isset($pagina['1']) && $pagina['0'] == 'egresados') {
+            } elseif ((isset($pagina['1']) && $pagina['1'] != '') && $pagina['0'] == 'egresados') {
                 // palabras permitidas para egresados
                 $palabras_nivel2 = ['inicio', 'calificaciones', 'historial'];
                 if (in_array($pagina['1'], $palabras_nivel2)) {
@@ -94,7 +93,7 @@ class vistaModelo
                 } else {
                     $contenido = "404";
                 }
-            }else{
+            } else {
 
                 if (is_file("./src/view/" . $vista . ".php")) {
                     $contenido = "./src/view/" . $vista . ".php";
