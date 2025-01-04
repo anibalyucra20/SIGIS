@@ -146,7 +146,6 @@
                                         <div class="form-group mb-0 justify-content-end row text-center">
                                             <div class="col-12">
                                                 <button type="button" class="btn btn-light waves-effect waves-light" data-dismiss="modal">Cancelar</button>
-                                                <button type="reset" class="btn btn-light waves-effect waves-light">Deshacer cambios</button>
                                                 <button type="submit" class="btn btn-success waves-effect waves-light">Guardar</button>
                                             </div>
                                         </div>
