@@ -123,22 +123,26 @@
                     <thead>
                         <tr>
                             <th>Nro</th>
-                            <th>Titulo</th>
-                            <th>Autor</th>
-                            <th>Programa de Estudios</th>
-                            <th>Semestre</th>
-                            <th>Unidad Didáctica</th>
+                            <th>DNI</th>
+                            <th>Apellidos y Nombres</th>
+                            <th>Género</th>
+                            <th>Sede</th>
+                            <th>Programa de Estudio</th>
+                            <th>Cargo</th>
+                            <th>Activo</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td>dsfsd</td>
-                            <td>sdfsdfs</td>
-                            <td>dfsdfsd</td>
-                            <td>fsdfsdf</td>
-                            <td>sdfsdfsdf</td>
-                            <td>sdfsdfsd</td>
+                            <td>1</td>
+                            <td>12345678</td>
+                            <td>yucra curo anibal</td>
+                            <td>M</td>
+                            <td>HUANTA</td>
+                            <td>DPW</td>
+                            <td>DOCENTE</td>
+                            <td>SI</td>
                             <td>
                                 <button type="button" title="Editar" class="btn btn-primary waves-effect waves-light" data-toggle="modal" data-target=".modal-editar"><i class="fa fa-edit"></i></button>
                                 <button type="button" title="Persimos" class="btn btn-light waves-effect waves-light" data-toggle="modal" data-target=".modal-permisos"><i class="fa fa-folder-open"></i></button>
