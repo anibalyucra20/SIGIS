@@ -19,7 +19,11 @@
                                     <div class="form-group row mb-2">
                                         <label for="periodo" class="col-3 col-form-label">Periodo Académico</label>
                                         <div class="col-sm-4 mb-2 mb-sm-0">
-                                            <select class="form-control form-control-user" id="periodo"></select>
+                                            <select class="form-control form-control-user" id="periodo">
+                                                <option value=""></option>
+                                                <option value=""></option>
+                                                <option value=""></option>
+                                            </select>
                                         </div>
                                         <div class="col-sm-4">
                                             <select class="form-control form-control-user" id="periodo"> </select>

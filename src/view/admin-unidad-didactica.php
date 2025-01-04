@@ -26,7 +26,9 @@
                                         <label for="programa" class="col-3 col-form-label">Programa de Estudios</label>
                                         <div class="col-sm-9 mb-2 mb-sm-0">
                                             <select class="form-control form-control-user" id="programa">
-                                                <option value="" disabled></option>
+                                                <option value=""></option>
+                                                <option value=""></option>
+                                                <option value=""></option>
                                             </select>
                                         </div>
                                     </div>
