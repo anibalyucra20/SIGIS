@@ -7,12 +7,12 @@
              <div class="row">
                  <div class="col-md-6">
                      <div class="text-center text-lg-left">
-                         2020 © Xeloro.
+                         2025 © SIGI.
                      </div>
                  </div>
                  <div class="col-md-6">
                      <div class="text-right d-none d-lg-block">
-                         Design & Develop by Myra
+                         Desarrollado por GRUPO TINYH PERU S.A.C.
                      </div>
                  </div>
              </div>
