@@ -17,7 +17,7 @@ class vistaModelo
             $pagina = explode("/", $_GET['views']);
             if ((isset($pagina['1']) && $pagina['1'] != '') && $pagina['0'] == 'admin') {
                 // palabras permitidas para administracion
-                $palabras_nivel2 = ['informacion', 'periodo-acedemico', 'docentes', 'sedes', 'programas-estudio', 'modulos-formativos', 'semestre', 'editar-semestre', 'unidades-didacticas', 'editar-unidad-didactica', 'competencias', 'editar-competencia', 'indicador-logro-competencia', 'capacidades', 'editar-capacidad', 'indicador-logro-capacidad', 'sistema'];
+                $palabras_nivel2 = ['institucion', 'periodo-academico', 'docentes', 'sedes', 'programa-estudio', 'modulo-formativo', 'semestre', 'editar-semestre', 'unidad-didactica', 'editar-unidad-didactica', 'competencia', 'editar-competencia', 'indicador-logro-competencia', 'capacidad', 'editar-capacidad', 'indicador-logro-capacidad', 'sistema'];
                 if (in_array($pagina['1'], $palabras_nivel2)) {
 
                     if (is_file("./src/view/" . $vista . "-" . $pagina['1'] . ".php")) {
@@ -43,7 +43,7 @@ class vistaModelo
                 }
             } elseif ((isset($pagina['1']) && $pagina['1'] != '') && $pagina['0'] == 'biblioteca') {
                 // palabras permitidas para biblioteca
-                $palabras_nivel2 = ['libros', 'favoritos', 'detalle-libro', 'lectura', 'perfil', 'admin','vista-libros','nuevo-libro', 'editar-libro','asignaciones','usuarios','lecturas','accesos'];
+                $palabras_nivel2 = ['libros', 'favoritos', 'detalle-libro', 'lectura', 'perfil', 'admin', 'vista-libros', 'nuevo-libro', 'editar-libro', 'asignaciones', 'usuarios', 'lecturas', 'accesos'];
                 if (in_array($pagina['1'], $palabras_nivel2)) {
 
                     if (is_file("./src/view/" . $vista . "-" . $pagina['1'] . ".php")) {
@@ -101,7 +101,9 @@ class vistaModelo
                     $contenido = "404";
                 }
             }
-        } elseif ($vista == "login" || $vista == "index") {
+        } elseif ($vista == "intranet" || $vista == "index") {
+            $contenido = "intranet";
+        } elseif ($vista == "login") {
             $contenido = "login";
         } else {
             $contenido = "404";

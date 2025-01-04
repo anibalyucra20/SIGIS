@@ -6,7 +6,7 @@ $mostrar = new vistasControlador();
 
 $vista = $mostrar->obtenerVistaControlador();
 
-if ($vista=="login" || $vista == "404") {
+if ($vista=="login" || $vista == "404" || $vista == "intranet") {
     require_once "./src/view/".$vista.".php";
 }else {
     

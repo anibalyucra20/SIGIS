@@ -13,7 +13,7 @@ class vistasControlador extends vistaModelo{
             $ruta = explode("/",$_GET['views']);
             $respuesta = vistaModelo::obtener_vista($ruta[0]);
         }else {
-            $respuesta = "login";
+            $respuesta = "intranet";
         }
         return $respuesta;
     }
