@@ -99,9 +99,9 @@
                                             </div>
                                         </div>
                                         <div class="form-group row mb-2">
-                                            <label for="pe" class="col-3 col-form-label">Módulo Formativo</label>
+                                            <label for="modulo" class="col-3 col-form-label">Módulo Formativo</label>
                                             <div class="col-9">
-                                                <select class="form-control form-control-user" id="pe">
+                                                <select class="form-control form-control-user" id="modulo">
                                                     <option value=""></option>
                                                     <option value="">I</option>
                                                     <option value="">II</option>
