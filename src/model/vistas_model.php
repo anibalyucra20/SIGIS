@@ -30,7 +30,7 @@ class vistaModelo
                 }
             } elseif ((isset($pagina['1']) && $pagina['1'] != '') && $pagina['0'] == 'academico') {
                 // palabras permitidas para academico
-                $palabras_nivel2 = ['unidades-didacticas', 'calificaciones'];
+                $palabras_nivel2 = ['programacion', 'estudiantes', 'editar-estudiante', 'matriculas', 'matricula', 'editar-matricula', 'licencias', 'mis-unidades-didacticas', 'unidades-didacticas', 'evaluaciones', 'estudiantes', 'estudiantes'];
                 if (in_array($pagina['1'], $palabras_nivel2)) {
 
                     if (is_file("./src/view/" . $vista . "-" . $pagina['1'] . ".php")) {
