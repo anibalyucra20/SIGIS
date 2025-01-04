@@ -23,7 +23,6 @@
                                             <textarea name="descripcion" id="descripcion" style="width:100%;" class="form-control" rows="10"></textarea>
                                         </div>
                                     </div>
-
                                     <div class="form-group mb-0 justify-content-end row text-center">
                                         <div class="col-12">
                                             <button type="button" class="btn btn-light waves-effect waves-light" data-dismiss="modal">Cancelar</button>
@@ -59,7 +58,7 @@
                                 <div class="modal-dialog modal-lg">
                                     <div class="modal-content">
                                         <div class="modal-header">
-                                            <h5 class="modal-title h4" id="myLargeModalLabel">Registrar Indicadores de Logro de Competencia</h5>
+                                            <h5 class="modal-title h4" id="myLargeModalLabel">Actualizar Indicador de Logro de Competencia</h5>
                                             <button type="button" class="close waves-effect waves-light" data-dismiss="modal" aria-label="Close">
                                                 <span aria-hidden="true">&times;</span>
                                             </button>
