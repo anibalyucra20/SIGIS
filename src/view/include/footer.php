@@ -31,6 +31,8 @@
      <script src="<?php echo BASE_URL ?>src/view/pp/assets/js/bootstrap.bundle.min.js"></script>
      <script src="<?php echo BASE_URL ?>src/view/pp/assets/js/waves.js"></script>
      <script src="<?php echo BASE_URL ?>src/view/pp/assets/js/simplebar.min.js"></script>
+      <!-- Sweet Alerts Js-->
+      <script src="<?php echo BASE_URL ?>src/view/pp/plugins/sweetalert2/sweetalert2.min.js"></script>
 
 
 

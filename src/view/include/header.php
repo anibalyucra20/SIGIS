@@ -17,11 +17,16 @@
     <link href="<?php echo BASE_URL ?>src/view/pp/plugins/datatables/responsive.bootstrap4.css" rel="stylesheet" type="text/css" />
     <link href="<?php echo BASE_URL ?>src/view/pp/plugins/datatables/buttons.bootstrap4.css" rel="stylesheet" type="text/css" />
     <link href="<?php echo BASE_URL ?>src/view/pp/plugins/datatables/select.bootstrap4.css" rel="stylesheet" type="text/css" />
+    <!-- Sweet Alerts css -->
+    <link href="<?php echo BASE_URL ?>src/view/pp/plugins/sweetalert2/sweetalert2.min.css" rel="stylesheet" type="text/css" />
 
     <!-- App css -->
     <link href="<?php echo BASE_URL ?>src/view/pp/assets/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
     <link href="<?php echo BASE_URL ?>src/view/pp/assets/css/icons.min.css" rel="stylesheet" type="text/css" />
     <link href="<?php echo BASE_URL ?>src/view/pp/assets/css/theme.min.css" rel="stylesheet" type="text/css" />
+    <script>
+        const base_url = '<?php echo BASE_URL; ?>';
+    </script>
 
 </head>
 
@@ -73,7 +78,7 @@
                         <div class="dropdown d-inline-block ml-2">
                             <button type="button" class="btn header-item waves-effect waves-light"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <img class="rounded-circle header-profile-user" src="assets/images/users/avatar-3.jpg">
+                                <img class="rounded-circle header-profile-user" src="https://cdn-icons-png.flaticon.com/512/1077/1077063.png">
                                 <span class="d-none d-sm-inline-block ml-1">Nombre de Usuario</span>
                                 <i class="mdi mdi-chevron-down d-none d-sm-inline-block"></i>
                             </button>
