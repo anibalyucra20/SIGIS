@@ -13,6 +13,7 @@
     <link rel="shortcut icon" href="<?php echo BASE_URL ?>src/view/pp/assets/images/favicon.ico">
 
     <!-- Plugins css -->
+    <script src="<?php echo BASE_URL ?>src/view/js/principal.js"></script>
     <link href="<?php echo BASE_URL ?>src/view/pp/plugins/datatables/dataTables.bootstrap4.css" rel="stylesheet" type="text/css" />
     <link href="<?php echo BASE_URL ?>src/view/pp/plugins/datatables/responsive.bootstrap4.css" rel="stylesheet" type="text/css" />
     <link href="<?php echo BASE_URL ?>src/view/pp/plugins/datatables/buttons.bootstrap4.css" rel="stylesheet" type="text/css" />
@@ -24,9 +25,11 @@
     <link href="<?php echo BASE_URL ?>src/view/pp/assets/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
     <link href="<?php echo BASE_URL ?>src/view/pp/assets/css/icons.min.css" rel="stylesheet" type="text/css" />
     <link href="<?php echo BASE_URL ?>src/view/pp/assets/css/theme.min.css" rel="stylesheet" type="text/css" />
+    <link href="<?php echo BASE_URL ?>src/view/include/styles.css" rel="stylesheet" type="text/css" />
     <script>
         const base_url = '<?php echo BASE_URL; ?>';
     </script>
+     
 
 </head>
 
@@ -227,3 +230,13 @@
             <div class="page-content">
                 <div class="container-fluid">
                     <!-- start page title -->
+
+                    <!-- Popup de carga -->
+                    <div id="popup-carga" style="display: none;">
+                        <div class="popup-overlay">
+                            <div class="popup-content">
+                                <div class="spinner"></div>
+                                <p>Cargando, por favor espera...</p>
+                            </div>
+                        </div>
+                    </div>

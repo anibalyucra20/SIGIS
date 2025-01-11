@@ -56,6 +56,8 @@
      <script src="<?php echo BASE_URL ?>src/view/pp/assets/pages/datatables-demo.js"></script>
      <!-- App js -->
      <script src="<?php echo BASE_URL ?>src/view/pp/assets/js/theme.js"></script>
+
+
      <script>
          $(document).ready(function() {
              $('#example').DataTable({

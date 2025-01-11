@@ -20,7 +20,8 @@ class PeriodoAcademicoModel
         }
         return $sql;
     }
-    public function actualizarPeriodo($id, $periodo, $fecha_inicio, $fecha_fin, $director, $fecha_actas){
+    public function actualizarPeriodo($id, $periodo, $fecha_inicio, $fecha_fin, $director, $fecha_actas)
+    {
         $sql = $this->conexion->query("UPDATE sigi_periodo_academico SET nombre='$periodo',fecha_inicio='$fecha_inicio',fecha_fin='$fecha_fin',director='$director',fecha_actas='$fecha_actas' WHERE id='$id'");
         return $sql;
     }

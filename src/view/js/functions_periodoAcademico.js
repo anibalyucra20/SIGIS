@@ -1,10 +1,6 @@
-function seleccionar(id, valor) {
-    let select = document.getElementById(id);
-    select.value = valor;
-}
-
 async function listar_periodos() {
     try {
+        mostrarPopupCarga();
         let respuesta = await fetch(base_url + 'src/control/PeriodoAcademico.php?tipo=listar');
         let json = await respuesta.json();
         if (json.status) {
@@ -33,6 +29,8 @@ async function listar_periodos() {
         //console.log(respuesta);
     } catch (e) {
         console.log("Error al cargar categorias" + e);
+    } finally {
+        ocultarPopupCarga();
     }
 }
 function generarfilastabla(item) {
@@ -214,12 +212,12 @@ async function actualizarPeriodo(id) {
             text: 'Campos vacíos...',
             confirmButtonClass: 'btn btn-confirm mt-2',
             footer: '',
-            timer:1000
+            timer: 1000
         })
         return;
     }
 
-    const formulario = document.getElementById('frmActualizar'+id);
+    const formulario = document.getElementById('frmActualizar' + id);
     const datos = new FormData(formulario);
     try {
         let respuesta = await fetch(base_url + 'src/control/PeriodoAcademico.php?tipo=actualizar', {
@@ -230,7 +228,7 @@ async function actualizarPeriodo(id) {
         });
         json = await respuesta.json();
         if (json.status) {
-            $('.modal_editar'+id).modal('hide');
+            $('.modal_editar' + id).modal('hide');
             Swal.fire({
                 type: 'success',
                 title: 'Actualizar',
@@ -239,7 +237,7 @@ async function actualizarPeriodo(id) {
                 footer: '',
                 timer: 1000
             });
-        }else{
+        } else {
             Swal.fire({
                 type: 'error',
                 title: 'Error',

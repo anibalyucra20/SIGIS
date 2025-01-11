@@ -20,7 +20,6 @@ if ($tipo == "listar") {
 
             $id_periodo = $arr_Periodos[$i]->id;
 
-            //localhost/editar-producto/4                                               // eliminar producto(1);
             $opciones = '<button class="btn btn-success" data-toggle="modal" data-target=".modal_editar' . $arr_Periodos[$i]->id . '"><i class="fa fa-edit"></i></button>';
             $arr_Periodos[$i]->options = $opciones;
         }
