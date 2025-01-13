@@ -24,8 +24,7 @@ async function listar_docentesOrdenados() {
                     </tbody>
                 </table>`;
             datos.forEach(item => {
-
-                generarfilastabla(item);
+                generarfilastabla(item, json.sedes, json.programas, json.sistemas, json.roles);
             });
         }
         //console.log(respuesta);
@@ -35,7 +34,7 @@ async function listar_docentesOrdenados() {
         ocultarPopupCarga();
     }
 }
-function generarfilastabla(item) {
+function generarfilastabla(item, sedes, programas, sistemas, roles) {
     let cont = 1;
     $(".filas_tabla").each(function () {
         cont++;
@@ -69,7 +68,7 @@ function generarfilastabla(item) {
         genero_f = "selected";
     }
 
-    sistemas = item.sistemas;
+    
     contenido_sistemas = ``;
     //console.log(sistemas);
 
@@ -84,7 +83,7 @@ function generarfilastabla(item) {
             valor_no = "selected";
         }
         lista_roles_permiso = `<option value="">Seleccione</option>`;
-        item.roles.forEach(roles => {
+        roles.forEach(roles => {
             rol_selected = "";
             if (roles.id == id_rol) {
                 rol_selected = "selected";
@@ -93,7 +92,7 @@ function generarfilastabla(item) {
         })
 
         lista_sedes = `<option value="">Seleccione</option>`;
-        item.sedes.forEach(sede => {
+        sedes.forEach(sede => {
             sede_selected = "";
             if (sede.id == item.id_sede) {
                 sede_selected = "selected";
@@ -102,7 +101,7 @@ function generarfilastabla(item) {
         })
 
         lista_pe = `<option value="">Seleccione</option>`;
-        item.programas.forEach(programa => {
+        programas.forEach(programa => {
             pe_selected = "";
             if (programa.id == item.id_programa_estudios) {
                 pe_selected = "selected";
@@ -111,7 +110,7 @@ function generarfilastabla(item) {
         })
 
         lista_roles = `<option value="">Seleccione</option>`;
-        item.roles.forEach(rol => {
+        roles.forEach(rol => {
             rol_selected = "";
             if (rol.id == item.id_rol) {
                 rol_selected = "selected";

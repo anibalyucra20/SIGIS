@@ -42,6 +42,15 @@ if ($tipo == "listar_docentes_ordenados") {
     $arr_Usuario = $objUsuario->buscarUsuarioDocentesOrderByApellidosNombres();
     $arr_contenido = [];
     if (!empty($arr_Usuario)) {
+
+        $arr_Sedes = $objSede->buscarSedes();
+        $arr_Respuesta['sedes'] = $arr_Sedes;
+        $arr_Pes = $objProgramaEstudio->buscarProgramaEstudios();
+        $arr_Respuesta['programas'] = $arr_Pes;
+        $arr_Roles = $objRoles->buscarRoles();
+        $arr_Respuesta['roles'] = $arr_Roles;
+        $arr_Sistemas = $objSistemas->buscarSistemas();
+        $arr_Respuesta['sistemas'] = $arr_Sistemas;
         // recorremos el array para agregar las opciones de las categorias
         for ($i = 0; $i < count($arr_Usuario); $i++) {
             // definimos el elemento como objeto
@@ -73,7 +82,7 @@ if ($tipo == "listar_docentes_ordenados") {
             $arr_Rol = $objRoles->buscarRolById($id_rol);
             $arr_contenido[$i]->rol = $arr_Rol->nombre;
 
-            $arr_Sistemas = $objSistemas->buscarSistemas();
+            
             $arr_contenido[$i]->permisos = [];
             for ($j = 0; $j < count($arr_Sistemas); $j++) {
                 $arr_Permisos = $objUsuario->buscarPermisoUsuarioByUsuarioSistema($arr_Usuario[$i]->id, $arr_Sistemas[$j]->id);
@@ -82,13 +91,6 @@ if ($tipo == "listar_docentes_ordenados") {
                 }
             }
 
-            $arr_Sedes = $objSede->buscarSedes();
-            $arr_contenido[$i]->sedes = $arr_Sedes;
-            $arr_Pes = $objProgramaEstudio->buscarProgramaEstudios();
-            $arr_contenido[$i]->programas = $arr_Pes;
-            $arr_Roles = $objRoles->buscarRoles();
-            $arr_contenido[$i]->roles = $arr_Roles;
-            $arr_contenido[$i]->sistemas = $arr_Sistemas;
 
             $opciones = '<button type="button" title="Editar" class="btn btn-primary waves-effect waves-light" data-toggle="modal" data-target=".modal-editar' . $arr_Usuario[$i]->id . '"><i class="fa fa-edit"></i></button>
                                 <button type="button" title="Persimos" class="btn btn-light waves-effect waves-light" data-toggle="modal" data-target=".modal-permisos' . $arr_Usuario[$i]->id . '"><i class="fa fa-folder-open"></i></button>

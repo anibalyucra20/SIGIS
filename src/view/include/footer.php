@@ -24,7 +24,9 @@
 
      </div>
      <!-- END layout-wrapper -->
-
+     <script>
+        setTimeout(500);
+     </script>
 
      <!-- jQuery  -->
      <script src="<?php echo BASE_URL ?>src/view/pp/assets/js/jquery.min.js"></script>
