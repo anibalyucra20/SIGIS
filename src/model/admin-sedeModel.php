@@ -26,4 +26,21 @@ class SedeModel
         $sql = $sql->fetch_object();
         return $sql;
     }
+
+    public function registrarSede($codigoModular, $nombre, $departamento, $provincia, $distrito, $direccion, $telefono, $correo, $responsable)
+    {
+        $sql = $this->conexion->query("INSERT INTO sigi_sedes (cod_modular, nombre, departamento, provincia, distrito, direccion, telefono, correo, responsable) VALUES ('$codigoModular', '$nombre', '$departamento', '$provincia', '$distrito', '$direccion', '$telefono', '$correo', '$responsable')");
+        if ($sql) {
+            $sql = $this->conexion->insert_id;
+        } else {
+            $sql = 0;
+        }
+        return $sql;
+    }
+
+    public function actualizarSede($id, $codigoModular, $nombre, $departamento, $provincia, $distrito, $direccion, $telefono, $correo, $responsable)
+    {
+        $sql = $this->conexion->query("UPDATE sigi_sedes SET cod_modular='$codigoModular',nombre='$nombre',departamento='$departamento',provincia='$provincia',distrito='$distrito',direccion='$direccion',telefono='$telefono',correo='$correo',responsable='$responsable' WHERE id='$id'");
+        return $sql;
+    }
 }
