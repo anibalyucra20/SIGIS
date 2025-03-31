@@ -28,6 +28,7 @@
     <link href="<?php echo BASE_URL ?>src/view/include/styles.css" rel="stylesheet" type="text/css" />
     <script>
         const base_url = '<?php echo BASE_URL; ?>';
+        const base_url_server = '<?php echo BASE_URL_SERVER; ?>';
     </script>
 </head>
 
