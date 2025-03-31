@@ -30,7 +30,7 @@ require_once "./src/config/config.php";
                     <div class="card text-center">
                         <div class="card-body">
                             <h4 class="card-title">INSTITUTO DE EDUCACION SUPERIOR TECNOLOGICO PUBLICO "MANUEL ANTONIO HIERRO POZO"</h4>
-                            <p class="card-text">Bienvenido NOMBRE DE USUARIO</p>
+                            <p class="card-text">Hola, <?php echo $_SESSION['sesion_sigi_usuario_nom']; ?></p>
                             <p class="card-text">Usted Tiene acceso a las Siguientes Sistemas:</p>
                         </div>
 

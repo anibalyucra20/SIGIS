@@ -1,12 +1,44 @@
+function numero_pagina(pagina) {
+    document.getElementById('pagina').value = pagina;
+    listar_docentesOrdenados();
+}
 async function listar_docentesOrdenados() {
     try {
         mostrarPopupCarga();
-        let respuesta = await fetch(base_url + 'src/control/Usuario.php?tipo=listar_docentes_ordenados');
-        let json = await respuesta.json();
-        if (json.status) {
-            let datos = json.contenido;
+        // para filtro
+        let pagina = document.getElementById('pagina').value;
+        let cantidad_mostrar = document.getElementById('cantidad_mostrar').value;
+        let busqueda_tabla_dni = document.getElementById('busqueda_tabla_dni').value;
+        let busqueda_tabla_nomap = document.getElementById('busqueda_tabla_nomap').value;
+        let busqueda_tabla_pe = document.getElementById('busqueda_tabla_pe').value;
+        let busqueda_tabla_estado = document.getElementById('busqueda_tabla_estado').value;
+        let busqueda_tabla_sede = document.getElementById('busqueda_tabla_sede').value;
+        // asignamos valores para guardar
+        document.getElementById('filtro_dni').value = busqueda_tabla_dni;
+        document.getElementById('filtro_nomap').value = busqueda_tabla_nomap;
+        document.getElementById('pe_actual_filtro').value = busqueda_tabla_pe;
+        document.getElementById('filtro_estado').value = busqueda_tabla_estado;
+        document.getElementById('sede_actual_filtro').value = busqueda_tabla_sede;
 
-            document.getElementById('tablas').innerHTML = `<table id="example" class="table dt-responsive" width="100%">
+        // generamos el formulario
+        const formData = new FormData();
+        formData.append('pagina', pagina);
+        formData.append('cantidad_mostrar', cantidad_mostrar);
+        formData.append('busqueda_tabla_dni', busqueda_tabla_dni);
+        formData.append('busqueda_tabla_nomap', busqueda_tabla_nomap);
+        formData.append('busqueda_tabla_pe', busqueda_tabla_pe);
+        formData.append('busqueda_tabla_estado', busqueda_tabla_estado);
+        formData.append('busqueda_tabla_sede', busqueda_tabla_sede);
+        //enviar datos hacia el controlador
+        let respuesta = await fetch(base_url + 'src/control/Usuario.php?tipo=listar_docentes_ordenados_tabla', {
+            method: 'POST',
+            mode: 'cors',
+            cache: 'no-cache',
+            body: formData
+        });
+
+        let json = await respuesta.json();
+        document.getElementById('tablas').innerHTML = `<table id="" class="table dt-responsive" width="100%">
                     <thead>
                         <tr>
                             <th>Nro</th>
@@ -16,20 +48,50 @@ async function listar_docentesOrdenados() {
                             <th>Sede</th>
                             <th>Programa de Estudio</th>
                             <th>Cargo</th>
-                            <th>Activo</th>
+                            <th>Estado</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="contenido_tabla">
                     </tbody>
                 </table>`;
+        document.querySelector('#modals_editar').innerHTML = ``;
+        document.querySelector('#modals_permisos').innerHTML = ``;
+        if (json.status) {
+            let datos = json.contenido;
             datos.forEach(item => {
                 generarfilastabla(item, json.sedes, json.programas, json.sistemas, json.roles);
             });
+        } else {
+            document.getElementById('tablas').innerHTML = `no se encontraron resultados`;
         }
+        let paginacion = generar_paginacion(json.total, cantidad_mostrar);
+        let texto_paginacion = generar_texto_paginacion(json.total, cantidad_mostrar);
+        document.getElementById('texto_paginacion_tabla').innerHTML = texto_paginacion;
+        document.getElementById('lista_paginacion_tabla').innerHTML = paginacion;
+        //cargar datos a filtro
+        cargar_programa_estudio_filtro(json.programas);
+        cargar_sede_filtro(json.sedes);
         //console.log(respuesta);
     } catch (e) {
         console.log("Error al cargar categorias" + e);
+    } finally {
+        ocultarPopupCarga();
+    }
+}
+async function datos_form() {
+    try {
+        mostrarPopupCarga();
+        let respuesta = await fetch(base_url + 'src/control/Usuario.php?tipo=datos_registro');
+        let json = await respuesta.json();
+        if (json.status) {
+            listar_sedes(json.sedes);
+            listar_programa_estudio(json.programas);
+            listar_roles(json.roles);
+        }
+        //console.log(respuesta);
+    } catch (e) {
+        console.log("Error al cargar datos" + e);
     } finally {
         ocultarPopupCarga();
     }
@@ -46,10 +108,10 @@ function generarfilastabla(item, sedes, programas, sistemas, roles) {
     activo_si = "";
     activo_no = "";
     if (item.estado == 1) {
-        estado = "SI";
+        estado = "ACTIVO";
         activo_si = "selected";
     } else {
-        estado = "NO";
+        estado = "INACTIVO";
         activo_no = "selected";
     }
     discapacidad_si = "";
@@ -68,7 +130,7 @@ function generarfilastabla(item, sedes, programas, sistemas, roles) {
         genero_f = "selected";
     }
 
-    
+
     contenido_sistemas = ``;
     //console.log(sistemas);
 
@@ -82,7 +144,7 @@ function generarfilastabla(item, sedes, programas, sistemas, roles) {
         } else {
             valor_no = "selected";
         }
-        lista_roles_permiso = `<option value="">Seleccione</option>`;
+        lista_roles_permiso = `<option value="0">Seleccione</option>`;
         roles.forEach(roles => {
             rol_selected = "";
             if (roles.id == id_rol) {
@@ -90,7 +152,6 @@ function generarfilastabla(item, sedes, programas, sistemas, roles) {
             }
             lista_roles_permiso += `<option value="${roles.id}" ${rol_selected}>${roles.nombre}</option>`;
         })
-
         lista_sedes = `<option value="">Seleccione</option>`;
         sedes.forEach(sede => {
             sede_selected = "";
@@ -99,7 +160,6 @@ function generarfilastabla(item, sedes, programas, sistemas, roles) {
             }
             lista_sedes += `<option value="${sede.id}" ${sede_selected}>${sede.nombre}</option>`;
         })
-
         lista_pe = `<option value="">Seleccione</option>`;
         programas.forEach(programa => {
             pe_selected = "";
@@ -118,14 +178,14 @@ function generarfilastabla(item, sedes, programas, sistemas, roles) {
             lista_roles += `<option value="${rol.id}" ${rol_selected}>${rol.nombre}</option>`;
         })
 
+
         contenido_sistemas += `<div class="form-group row mb-2">
                                                         <div class="form-group row mb-2 col-5">
                                                             <label for="${element.codigo}${item.id}" class="col-8 col-form-label">${element.nombre}</label>
                                                             <div class="col-4">
                                                                 <select name="${element.codigo}${item.id}" id="${element.codigo}${item.id}" class="form-control">
-                                                                    <option value=""></option>
                                                                     <option value="1" `+ valor_si + `>SI</option>
-                                                                    <option value="2" `+ valor_no + `>NO</option>
+                                                                    <option value="0" `+ valor_no + `>NO</option>
                                                                 </select>
                                                             </div>
                                                         </div>
@@ -151,7 +211,7 @@ function generarfilastabla(item, sedes, programas, sistemas, roles) {
                             <td>${estado}</td>
                             <td>${item.options}</td>
                 `;
-    document.querySelector('#modals_editar').innerHTML += `<div class="modal fade modal-editar${item.id}" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    document.querySelector('#modals_editar').innerHTML += `<div class="modal fade modal_editar${item.id}" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
                                 <div class="modal-dialog modal-lg">
                                     <div class="modal-content">
                                         <div class="modal-header text-center">
@@ -162,7 +222,7 @@ function generarfilastabla(item, sedes, programas, sistemas, roles) {
                                         </div>
                                         <div class="modal-body">
                                             <div class="col-12">
-                                                <form class="form-horizontal" id="frmEditar${item.id}">
+                                                <form class="form-horizontal" id="frmActualizar${item.id}">
                                                     <div class="form-group row mb-2">
                                                         <label for="dni${item.id}" class="col-3 col-form-label">DNI</label>
                                                         <div class="col-9">
@@ -244,12 +304,12 @@ function generarfilastabla(item, sedes, programas, sistemas, roles) {
                                                         </div>
                                                     </div>
                                                     <div class="form-group row mb-2">
-                                                        <label for="estado${item.id}" class="col-3 col-form-label">ACTIVO </label>
+                                                        <label for="estado${item.id}" class="col-3 col-form-label">ESTADO </label>
                                                         <div class="col-9">
                                                             <select name="estado" id="estado${item.id}" class="form-control">
                                                                 <option value=""></option>
-                                                                <option value="1" `+ activo_si + `>SI</option>
-                                                                <option value="0" `+ activo_no + `>NO</option>
+                                                                <option value="1" `+ activo_si + `>ACTIVO</option>
+                                                                <option value="0" `+ activo_no + `>INACTIVO</option>
                                                             </select>
                                                         </div>
                                                     </div>
@@ -257,7 +317,7 @@ function generarfilastabla(item, sedes, programas, sistemas, roles) {
                                                     <div class="form-group mb-0 justify-content-end row text-center">
                                                         <div class="col-12">
                                                             <button type="button" class="btn btn-light waves-effect waves-light" data-dismiss="modal">Cancelar</button>
-                                                            <button type="submit" class="btn btn-success waves-effect waves-light">Registrar</button>
+                                                            <button type="button" class="btn btn-success waves-effect waves-light" onclick="actualizarUsuario(${item.id})">Actualizar</button>
                                                         </div>
                                                     </div>
                                                 </form>
@@ -266,7 +326,7 @@ function generarfilastabla(item, sedes, programas, sistemas, roles) {
                                     </div>
                                 </div>
                             </div>`;
-    document.querySelector('#modals_permisos').innerHTML += `<div class="modal fade modal-permisos${item.id}" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    document.querySelector('#modals_permisos').innerHTML += `<div class="modal fade modal_permisos${item.id}" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
                                 <div class="modal-dialog modal-lg">
                                     <div class="modal-content">
                                         <div class="modal-header text-center">
@@ -277,7 +337,7 @@ function generarfilastabla(item, sedes, programas, sistemas, roles) {
                                         </div>
                                         <div class="modal-body">
                                             <div class="col-12">
-                                                <form class="form-horizontal">
+                                                <form class="form-horizontal" id="frm_permisos_${item.id}">
                                                     <div class="form-group row mb-2">
                                                         <label for="dni${item.id}" class="col-3 col-form-label">DNI</label>
                                                         <div class="col-9">
@@ -291,7 +351,7 @@ function generarfilastabla(item, sedes, programas, sistemas, roles) {
                                                         </div>
                                                     </div>
                                                     <div class="form-group row mb-2">
-                                                        <label for="sigi${item.id}" class="col-3 col-form-label">Sistemas :</label>
+                                                        <label class="col-3 col-form-label">Sistemas :</label>
                                                         <div class="col-9">
                                                         </div>
                                                     </div>
@@ -304,7 +364,7 @@ function generarfilastabla(item, sedes, programas, sistemas, roles) {
                                                     <div class="form-group mb-0 justify-content-end row text-center">
                                                         <div class="col-12">
                                                             <button type="button" class="btn btn-light waves-effect waves-light" data-dismiss="modal">Cancelar</button>
-                                                            <button type="submit" class="btn btn-success waves-effect waves-light">Actualizar</button>
+                                                            <button type="button" class="btn btn-success waves-effect waves-light" onclick="actualizar_permisos(${item.id});">Actualizar</button>
                                                         </div>
                                                     </div>
                                                 </form>
@@ -314,9 +374,7 @@ function generarfilastabla(item, sedes, programas, sistemas, roles) {
                                 </div>
                             </div>`;
     document.querySelector('#contenido_tabla').appendChild(nueva_fila);
-    listar_sedes(item.sedes);
-    listar_programa_estudio(item.programas);
-    listar_roles(item.roles);
+
 }
 
 async function listar_sedes(datos) {
@@ -330,7 +388,7 @@ async function listar_sedes(datos) {
             document.getElementById('id_sede').innerHTML = contenido_select;
         }
     } catch (error) {
-        console.log("ocurrio un error al listar sedes "+ error);
+        console.log("ocurrio un error al listar sedes " + error);
     }
 
 }
@@ -356,3 +414,221 @@ async function listar_roles(datos) {
         document.getElementById('id_rol').innerHTML = contenido_select;
     }
 }
+
+async function registrar_docente() {
+    let dni = document.getElementById('dni').value;
+    let apellidos_nombres = document.querySelector('#apellidos_nombres').value;
+    let genero = document.querySelector('#genero').value;
+    let fecha_nac = document.querySelector('#fecha_nac').value;
+    let direccion = document.querySelector('#direccion').value;
+    let correo = document.querySelector('#correo').value;
+    let telefono = document.querySelector('#telefono').value;
+    let discapacidad = document.querySelector('#discapacidad').value;
+    let id_sede = document.querySelector('#id_sede').value;
+    let id_rol = document.querySelector('#id_rol').value;
+    let id_programa_estudios = document.querySelector('#id_programa_estudios').value;
+    if (dni == "" || apellidos_nombres == "" || genero == "" || fecha_nac == "" || direccion == "" || correo == "" || telefono == "" || discapacidad == "" || id_sede == "" || id_rol == "" || id_programa_estudios == "") {
+        Swal.fire({
+            type: 'error',
+            title: 'Error',
+            text: 'Campos vacíos...',
+            confirmButtonClass: 'btn btn-confirm mt-2',
+            footer: ''
+        })
+        return;
+    }
+    try {
+        // capturamos datos del formulario html
+        const datos = new FormData(frmRegistrar);
+        //enviar datos hacia el controlador
+        let respuesta = await fetch(base_url + 'src/control/Usuario.php?tipo=registrar', {
+            method: 'POST',
+            mode: 'cors',
+            cache: 'no-cache',
+            body: datos
+        });
+        json = await respuesta.json();
+        if (json.status) {
+            document.getElementById("frmRegistrar").reset();
+            Swal.fire({
+                type: 'success',
+                title: 'Registro',
+                text: json.mensaje,
+                confirmButtonClass: 'btn btn-confirm mt-2',
+                footer: '',
+                timer: 1000
+            });
+
+        } else {
+            Swal.fire({
+                type: 'error',
+                title: 'Error',
+                text: json.mensaje,
+                confirmButtonClass: 'btn btn-confirm mt-2',
+                footer: '',
+                timer: 1000
+            })
+        }
+        //console.log(json);
+    } catch (e) {
+        console.log("Oops, ocurrio un error " + e);
+    }
+}
+
+async function actualizarUsuario(id) {
+    let dni = document.getElementById('dni' + id).value;
+    let apellidos_nombres = document.querySelector('#apellidos_nombres' + id).value;
+    let genero = document.querySelector('#genero' + id).value;
+    let fecha_nac = document.querySelector('#fecha_nac' + id).value;
+    let direccion = document.querySelector('#direccion' + id).value;
+    let correo = document.querySelector('#correo' + id).value;
+    let telefono = document.querySelector('#telefono' + id).value;
+    let discapacidad = document.querySelector('#discapacidad' + id).value;
+    let id_sede = document.querySelector('#id_sede' + id).value;
+    let id_rol = document.querySelector('#id_rol' + id).value;
+    let id_programa_estudios = document.querySelector('#id_programa_estudios' + id).value;
+    let estado = document.querySelector('#estado' + id).value;
+    if (dni == "" || apellidos_nombres == "" || genero == "" || fecha_nac == "" || direccion == "" || correo == "" || telefono == "" || discapacidad == "" || id_sede == "" || id_rol == "" || id_programa_estudios == "" || estado == "") {
+        Swal.fire({
+            type: 'error',
+            title: 'Error',
+            text: 'Campos vacíos...',
+            confirmButtonClass: 'btn btn-confirm mt-2',
+            footer: '',
+            timer: 1000
+        })
+        return;
+    }
+
+    const formulario = document.getElementById('frmActualizar' + id);
+    const datos = new FormData(formulario);
+    datos.append('data', id);
+    try {
+        let respuesta = await fetch(base_url + 'src/control/Usuario.php?tipo=actualizar', {
+            method: 'POST',
+            mode: 'cors',
+            cache: 'no-cache',
+            body: datos
+        });
+        json = await respuesta.json();
+        if (json.status) {
+            $('.modal_editar' + id).modal('hide');
+            Swal.fire({
+                type: 'success',
+                title: 'Actualizar',
+                text: json.mensaje,
+                confirmButtonClass: 'btn btn-confirm mt-2',
+                footer: '',
+                timer: 1000
+            });
+        } else {
+            Swal.fire({
+                type: 'error',
+                title: 'Error',
+                text: json.mensaje,
+                confirmButtonClass: 'btn btn-confirm mt-2',
+                footer: '',
+                timer: 1000
+            })
+        }
+        //console.log(json);
+    } catch (e) {
+        console.log("Error al actualizar periodo" + e);
+    }
+}
+//-------------------------------------------------------- RESETEAR CONTRASEÑA -------------------------------------------------------------
+function reset_password(id) {
+    Swal.fire({
+        title: "¿Estás seguro de generar nueva contraseña?",
+        text: "Se generará un nueva contraseña para este usuario",
+        type: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Si",
+        cancelButtonText: 'Cancelar'
+    }).then(function (result) {
+        if (result.value) {
+            reniciar_password(id);
+        }
+    });
+}
+async function reniciar_password(id) {
+
+    // generamos el formulario
+    const formData = new FormData();
+    formData.append('id', id);
+    try {
+        let respuesta = await fetch(base_url + 'src/control/Usuario.php?tipo=reiniciar_password', {
+            method: 'POST',
+            mode: 'cors',
+            cache: 'no-cache',
+            body: formData
+        });
+        json = await respuesta.json();
+        if (json.status) {
+            Swal.fire({
+                type: 'success',
+                title: 'Actualizar',
+                text: json.mensaje,
+                confirmButtonClass: 'btn btn-confirm mt-2',
+                footer: '',
+                confirmButtonText: "Aceptar"
+            });
+        } else {
+            Swal.fire({
+                type: 'error',
+                title: 'Error',
+                text: json.mensaje,
+                confirmButtonClass: 'btn btn-confirm mt-2',
+                footer: '',
+                timer: 1000
+            })
+        }
+        //console.log(json);
+    } catch (e) {
+        console.log("Error al actualizar periodo" + e);
+    }
+
+
+}
+// ------------------------------------------------------ FUNCIONES DE PERMISOS----------------------------------------------------------------
+async function actualizar_permisos(id) {
+    const formulario = document.getElementById('frm_permisos_' + id);
+    const datos = new FormData(formulario);
+    datos.append('data', id);
+    try {
+        let respuesta = await fetch(base_url + 'src/control/Usuario.php?tipo=actualizar_permisos', {
+            method: 'POST',
+            mode: 'cors',
+            cache: 'no-cache',
+            body: datos
+        });
+        json = await respuesta.json();
+        if (json.status) {
+            $('.modal_permisos' + id).modal('hide');
+            Swal.fire({
+                type: 'success',
+                title: 'Actualizar',
+                text: json.mensaje,
+                confirmButtonClass: 'btn btn-confirm mt-2',
+                footer: '',
+                timer: 1000
+            });
+        } else {
+            Swal.fire({
+                type: 'error',
+                title: 'Error',
+                text: json.mensaje,
+                confirmButtonClass: 'btn btn-confirm mt-2',
+                footer: '',
+                timer: 1000
+            })
+        }
+        //console.log(json);
+    } catch (e) {
+        console.log("Error al actualizar periodo" + e);
+    }
+}
+
+// ----------------------------------------------------- FIN FUNCIONES PERMISOS--------------------------------------------------------

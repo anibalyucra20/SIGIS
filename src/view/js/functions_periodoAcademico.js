@@ -1,12 +1,27 @@
+function numero_pagina(pagina) {
+    document.getElementById('pagina').value = pagina;
+    listar_periodos();
+}
 async function listar_periodos() {
     try {
         mostrarPopupCarga();
-        let respuesta = await fetch(base_url + 'src/control/PeriodoAcademico.php?tipo=listar');
+        let pagina = document.getElementById('pagina').value;
+        let cantidad_mostrar = document.getElementById('cantidad_mostrar').value;
+        let busqueda_tabla = document.getElementById('busqueda_tabla').value;
+        // generamos el formulario
+        const formData = new FormData();
+        formData.append('pagina', pagina);
+        formData.append('cantidad_mostrar', cantidad_mostrar);
+        formData.append('busqueda_tabla', busqueda_tabla);
+        //enviar datos hacia el controlador
+        let respuesta = await fetch(base_url + 'src/control/PeriodoAcademico.php?tipo=listar_tabla', {
+            method: 'POST',
+            mode: 'cors',
+            cache: 'no-cache',
+            body: formData
+        });
         let json = await respuesta.json();
-        if (json.status) {
-            let datos = json.contenido;
-
-            document.getElementById('tablas').innerHTML = `<table id="example" class="table dt-responsive" width="100%">
+        document.getElementById('tablas').innerHTML = `<table id="" class="table dt-responsive" width="100%">
                     <thead>
                         <tr>
                             <th>Nro</th>
@@ -21,11 +36,20 @@ async function listar_periodos() {
                     <tbody id="contenido_tabla">
                     </tbody>
                 </table>`;
-            datos.forEach(item => {
+        document.querySelector('#modals_editar').innerHTML = ``;
+        if (json.status) {
+            let datos = json.contenido;
 
-                generarfilastabla(item);
+            datos.forEach(item => {
+                generarfilastabla(item, json.directores);
             });
+        } else {
+            document.getElementById('tablas').innerHTML = `no se encontraron resultados`;
         }
+        let paginacion = generar_paginacion(json.total, cantidad_mostrar);
+        let texto_paginacion = generar_texto_paginacion(json.total, cantidad_mostrar);
+        document.getElementById('texto_paginacion_tabla').innerHTML = texto_paginacion;
+        document.getElementById('lista_paginacion_tabla').innerHTML = paginacion;
         //console.log(respuesta);
     } catch (e) {
         console.log("Error al cargar categorias" + e);
@@ -33,7 +57,7 @@ async function listar_periodos() {
         ocultarPopupCarga();
     }
 }
-function generarfilastabla(item) {
+function generarfilastabla(item, directores) {
     let cont = 1;
     $(".filas_tabla").each(function () {
         cont++;
@@ -42,6 +66,15 @@ function generarfilastabla(item) {
     nueva_fila.id = "fila" + item.id;
     nueva_fila.className = "filas_tabla";
 
+
+    lista_director = `<option value="">Seleccione</option>`;
+    directores.forEach(director => {
+        director_selected = "";
+        if (director.id == item.director) {
+            director_selected = "selected";
+        }
+        lista_director += `<option value="${director.id}" ${director_selected}>${director.apellidos_nombres}</option>`;
+    })
 
     nueva_fila.innerHTML = `
                             <th>${cont}</th>
@@ -85,7 +118,8 @@ function generarfilastabla(item) {
                                         <div class="form-group row mb-2">
                                             <label class="col-3 col-form-label">Director</label>
                                             <div class="col-sm-9 mb-2 mb-sm-0">
-                                                <select class="form-control form-control-user" id="director${item.id}" name="director"></select>
+                                                <select class="form-control form-control-user" id="director${item.id}" name="director">
+                                                ${lista_director}</select>
                                             </div>
                                         </div>
                                         <div class="form-group row mb-2">
@@ -107,7 +141,6 @@ function generarfilastabla(item) {
                         </div>
                     </div>`;
     document.querySelector('#contenido_tabla').appendChild(nueva_fila);
-    listar_director(item.id, item.director);
 }
 
 
@@ -141,9 +174,6 @@ async function registrar_periodo() {
         json = await respuesta.json();
         if (json.status) {
             document.getElementById("frmRegistrar").reset();
-            $('.bd-example-modal-new').modal('hide');
-
-            generarfilastabla(json.contenido);
             Swal.fire({
                 type: 'success',
                 title: 'Registro',
@@ -154,10 +184,6 @@ async function registrar_periodo() {
             });
 
 
-            /*
-            document.getElementById("tablas").innerHTML = "";
-            document.getElementById("modals_editar").innerHTML = "";
-            listar_periodos();*/
 
         } else {
             Swal.fire({
@@ -205,7 +231,7 @@ async function actualizarPeriodo(id) {
     let fecha_fin = document.querySelector('#fecha_fin' + id).value;
     let director = document.querySelector('#director' + id).value;
     let fecha_actas = document.querySelector('#fecha_actas' + id).value;
-    if (anio == "" || semestre == "" || fecha_inicio == "" || fecha_fin == "" || director == "" || fecha_actas == "") {
+    if (semestre == "" || fecha_inicio == "" || fecha_fin == "" || director == "" || fecha_actas == "") {
         Swal.fire({
             type: 'error',
             title: 'Error',
@@ -247,7 +273,7 @@ async function actualizarPeriodo(id) {
                 timer: 1000
             })
         }
-        console.log(json);
+        //console.log(json);
     } catch (e) {
         console.log("Error al actualizar periodo" + e);
     }

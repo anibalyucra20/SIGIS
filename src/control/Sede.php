@@ -1,4 +1,5 @@
 <?php
+session_start();
 require_once('../model/admin-sedeModel.php');
 require_once('../model/admin-usuarioModel.php');
 $tipo = $_REQUEST['tipo'];
@@ -29,6 +30,7 @@ if ($tipo == "listar") {
     }
     echo json_encode($arr_Respuesta);
 }
+
 
 if ($tipo == "registrar") {
     //print_r($_POST);

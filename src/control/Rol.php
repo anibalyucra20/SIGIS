@@ -1,4 +1,5 @@
 <?php
+session_start();
 require_once('../model/admin-RolesModel.php');
 $tipo = $_REQUEST['tipo'];
 

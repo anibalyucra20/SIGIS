@@ -1,23 +1,17 @@
 <?php
-//session_start();
 class vistaModelo
 {
-
     protected static function obtener_vista($vista)
     {
+        
         $palabras_permitidas_n1 = ['admin', 'academico', 'biblioteca', 'tutoria', 'admision', 'egresados'];
-        /*if(!isset($_SESSION['sesion_ventas_id'])) {
-            return "login";
-        }*/
-
-
-
+        
         if (in_array($vista, $palabras_permitidas_n1)) {
 
             $pagina = explode("/", $_GET['views']);
             if ((isset($pagina['1']) && $pagina['1'] != '') && $pagina['0'] == 'admin') {
                 // palabras permitidas para administracion
-                $palabras_nivel2 = ['institucion', 'periodo-academico', 'docentes', 'sedes', 'programa-estudio', 'modulo-formativo', 'semestre', 'editar-semestre', 'unidad-didactica', 'editar-unidad-didactica', 'competencia', 'editar-competencia', 'indicador-logro-competencia', 'capacidad', 'editar-capacidad', 'indicador-logro-capacidad', 'sistema'];
+                $palabras_nivel2 = ['institucion', 'periodo-academico', 'nuevo-periodo-academico', 'nuevo-docente', 'docentes', 'sedes', 'programa-estudio', 'modulo-formativo', 'semestre', 'editar-semestre', 'unidad-didactica', 'editar-unidad-didactica', 'competencia', 'editar-competencia', 'indicador-logro-competencia', 'capacidad', 'editar-capacidad', 'indicador-logro-capacidad', 'sistema'];
                 if (in_array($pagina['1'], $palabras_nivel2)) {
 
                     if (is_file("./src/view/" . $vista . "-" . $pagina['1'] . ".php")) {
@@ -108,6 +102,7 @@ class vistaModelo
         } else {
             $contenido = "404";
         }
+        
         return $contenido;
     }
 }

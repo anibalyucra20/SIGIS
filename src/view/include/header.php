@@ -29,8 +29,6 @@
     <script>
         const base_url = '<?php echo BASE_URL; ?>';
     </script>
-     
-
 </head>
 
 <body>
@@ -78,11 +76,29 @@
                     </div>
 
                     <div class="d-flex align-items-center">
+                        <div class="dropdown d-inline-block">
+                            <button type="button" class="btn header-item waves-effect waves-light"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span class="d-none d-sm-inline-block ml-1" id="menu_sede">Huanta</span>
+                                <i class="mdi mdi-chevron-down d-none d-sm-inline-block"></i>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-right" id="contenido_menu_sede">
+                            </div>
+                        </div>
+                        <div class="dropdown d-inline-block">
+                            <button type="button" class="btn header-item waves-effect waves-light"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span class="d-none d-sm-inline-block ml-1" id="menu_periodo">2023-II</span>
+                                <i class="mdi mdi-chevron-down d-none d-sm-inline-block"></i>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-right" id="contenido_menu_periodo">
+                            </div>
+                        </div>
                         <div class="dropdown d-inline-block ml-2">
                             <button type="button" class="btn header-item waves-effect waves-light"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <img class="rounded-circle header-profile-user" src="https://cdn-icons-png.flaticon.com/512/1077/1077063.png">
-                                <span class="d-none d-sm-inline-block ml-1">Nombre de Usuario</span>
+                                <span class="d-none d-sm-inline-block ml-1"><?php echo $_SESSION['sesion_sigi_usuario_nom']; ?></span>
                                 <i class="mdi mdi-chevron-down d-none d-sm-inline-block"></i>
                             </button>
                             <div class="dropdown-menu dropdown-menu-right">
@@ -92,13 +108,13 @@
                                 <a class="dropdown-item d-flex align-items-center justify-content-between" href="javascript:void(0)">
                                     <span>Cambiar mi Contraseña</span>
                                 </a>
-                                <a class="dropdown-item d-flex align-items-center justify-content-between" href="javascript:void(0)">
+                                <button class="dropdown-item d-flex align-items-center justify-content-between" onclick="cerrar_sesion();">
                                     <span>Cerrar Sesión</span>
-                                </a>
+                                </button>
                             </div>
                         </div>
-
                     </div>
+
                 </div>
             </header>
 
@@ -236,7 +252,10 @@
                         <div class="popup-overlay">
                             <div class="popup-content">
                                 <div class="spinner"></div>
-                                <p>Cargando, por favor espera...</p>
+                                <p>Cargando, por favor espere...</p>
                             </div>
                         </div>
                     </div>
+                    <script>
+                        cargar_datos_menu(<?php echo $_SESSION['sesion_sigi_sede']; ?>, <?php echo $_SESSION['sesion_sigi_periodo']; ?>);
+                    </script>

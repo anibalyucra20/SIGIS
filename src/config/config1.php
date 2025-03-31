@@ -9,5 +9,6 @@ const BD_CHARSET = 'utf8';
 
 //ingresar link de proyecto
 const BASE_URL = '';
+const BASE_URL_SERVER = '';
 
 ?>
