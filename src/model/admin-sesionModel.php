@@ -41,10 +41,9 @@ class SessionModel
             $nueva_fecha_hora_fin = date("Y-m-d H:i:s", $nueva_fecha_hora_fin);
 
             $this->conexion->query("UPDATE sigi_sesiones SET fecha_hora_fin='$nueva_fecha_hora_fin' WHERE id=$id_sesion");
+            return true;
         } else {
-            session_start();
-            session_unset();
-            session_destroy();
+            return false;
         }
     }
 

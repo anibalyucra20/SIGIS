@@ -42,8 +42,7 @@ if ($tipo == "validar_sesion") {
     $id_sesion = $_GET['sesion'];
     $token = $_GET['token'];
 
-    echo $id_sesion;
-    echo "<BR>";
-    echo $token;
+    $resultado = $objSesion->verificar_sesion_si_activa($id_sesion, $token);
+    echo $resultado;
 }
 
