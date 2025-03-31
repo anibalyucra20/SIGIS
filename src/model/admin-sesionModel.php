@@ -34,7 +34,7 @@ class SessionModel
         $fecha_hora_fin = strtotime('+8 hour', strtotime($fecha_hora_fin_sesion));
         $fecha_hora_fin = date("Y-m-d H:i:s", $fecha_hora_fin);
 
-        if ((password_verify($datos_sesion->fecha_hora_fin, $token)) && ($hora_actual <= $fecha_hora_fin)) {
+        if ((password_verify($datos_sesion->token, $token)) && ($hora_actual <= $fecha_hora_fin)) {
             // actualizar fecha de sesion
             $hora_actual = date("Y-m-d H:i:s");
             $nueva_fecha_hora_fin = strtotime('+1 minute', strtotime($hora_actual));
