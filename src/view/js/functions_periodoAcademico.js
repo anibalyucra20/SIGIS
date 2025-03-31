@@ -14,7 +14,7 @@ async function listar_periodos() {
         formData.append('cantidad_mostrar', cantidad_mostrar);
         formData.append('busqueda_tabla', busqueda_tabla);
         //enviar datos hacia el controlador
-        let respuesta = await fetch(base_url + 'src/control/PeriodoAcademico.php?tipo=listar_tabla', {
+        let respuesta = await fetch(base_url_server + 'src/control/PeriodoAcademico.php?tipo=listar_tabla', {
             method: 'POST',
             mode: 'cors',
             cache: 'no-cache',
@@ -165,7 +165,7 @@ async function registrar_periodo() {
         // capturamos datos del formulario html
         const datos = new FormData(frmRegistrar);
         //enviar datos hacia el controlador
-        let respuesta = await fetch(base_url + 'src/control/PeriodoAcademico.php?tipo=registrar', {
+        let respuesta = await fetch(base_url_server + 'src/control/PeriodoAcademico.php?tipo=registrar', {
             method: 'POST',
             mode: 'cors',
             cache: 'no-cache',
@@ -204,7 +204,7 @@ async function registrar_periodo() {
 
 async function listar_director(id = "", id2 = 0) {
     try {
-        let respuesta = await fetch(base_url + 'src/control/Usuario.php?tipo=listar_director');
+        let respuesta = await fetch(base_url_server + 'src/control/Usuario.php?tipo=listar_director');
         json = await respuesta.json();
         if (json.status) {
             let datos = json.contenido;
@@ -246,7 +246,7 @@ async function actualizarPeriodo(id) {
     const formulario = document.getElementById('frmActualizar' + id);
     const datos = new FormData(formulario);
     try {
-        let respuesta = await fetch(base_url + 'src/control/PeriodoAcademico.php?tipo=actualizar', {
+        let respuesta = await fetch(base_url_server + 'src/control/PeriodoAcademico.php?tipo=actualizar', {
             method: 'POST',
             mode: 'cors',
             cache: 'no-cache',

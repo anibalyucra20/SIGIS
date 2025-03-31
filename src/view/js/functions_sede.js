@@ -1,7 +1,7 @@
 async function listar_sedes() {
     try {
         mostrarPopupCarga();
-        let respuesta = await fetch(base_url + 'src/control/Sede.php?tipo=listar');
+        let respuesta = await fetch(base_url_server + 'src/control/Sede.php?tipo=listar');
         let json = await respuesta.json();
         if (json.status) {
             let datos = json.contenido;
@@ -139,7 +139,7 @@ function generarfilastabla(item) {
 
 async function listar_director(id = "", id2 = 0) {
     try {
-        let respuesta = await fetch(base_url + 'src/control/Usuario.php?tipo=listar_director');
+        let respuesta = await fetch(base_url_server + 'src/control/Usuario.php?tipo=listar_director');
         json = await respuesta.json();
         if (json.status) {
             let datos = json.contenido;
@@ -183,7 +183,7 @@ async function registrar_sede() {
         // capturamos datos del formulario html
         const datos = new FormData(frmRegistrar);
         //enviar datos hacia el controlador
-        let respuesta = await fetch(base_url + 'src/control/Sede.php?tipo=registrar', {
+        let respuesta = await fetch(base_url_server + 'src/control/Sede.php?tipo=registrar', {
             method: 'POST',
             mode: 'cors',
             cache: 'no-cache',
@@ -251,7 +251,7 @@ async function actualizarSede(id) {
     const formulario = document.getElementById('frmActualizar' + id);
     const datos = new FormData(formulario);
     try {
-        let respuesta = await fetch(base_url + 'src/control/Sede.php?tipo=actualizar', {
+        let respuesta = await fetch(base_url_server + 'src/control/Sede.php?tipo=actualizar', {
             method: 'POST',
             mode: 'cors',
             cache: 'no-cache',
