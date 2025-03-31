@@ -39,7 +39,11 @@ if ($tipo == "buscar") {
     
 }
 if ($tipo == "validar_sesion") {
-    echo true;
-    return true;
+    $id_sesion = $_GET['sesion'];
+    $token = $_GET['token'];
+
+    echo $id_sesion;
+    echo "<BR>";
+    echo $token;
 }
 

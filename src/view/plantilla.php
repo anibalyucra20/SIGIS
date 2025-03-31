@@ -35,8 +35,6 @@ if (isset($_SESSION['sesion_sigi_id']) && isset($_SESSION['sesion_sigi_token']))
     } else {
         echo $response; // en caso de funcionar correctamente
     }
-    echo $response;
-    echo "hola";
     //$arrSesion = $objSesion->verificar_sesion_si_activa($_SESSION['sesion_sigi_id'], $_SESSION['sesion_sigi_token']);
     if (!$response) {
         echo $response;
