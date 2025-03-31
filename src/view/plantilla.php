@@ -41,7 +41,7 @@ if (isset($_SESSION['sesion_sigi_id']) && isset($_SESSION['sesion_sigi_token']))
         //$vista = "login";
     }
 }
-
+/*
 if ($vista == "login" || $vista == "404" || $vista == "intranet") {
     require_once "./src/view/" . $vista . ".php";
 } else {
@@ -50,3 +50,4 @@ if ($vista == "login" || $vista == "404" || $vista == "intranet") {
     include $vista;
     include "./src/view/include/footer.php";
 }
+*/
