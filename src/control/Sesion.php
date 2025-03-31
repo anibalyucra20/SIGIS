@@ -38,4 +38,7 @@ if ($tipo == "buscar") {
     echo json_encode($arr_Respuesta);
     
 }
+if ($tipo == "validar_sesion") {
+    return true;
+}
 
