@@ -17,7 +17,7 @@ function ocultarPopupCarga() {
 // cargar elementos de menu
 async function cargar_sedes_menu(id_sede=0) {
     try {
-        let respuesta = await fetch(base_url + 'src/control/Sede.php?tipo=listar');
+        let respuesta = await fetch(base_url_server + 'src/control/Sede.php?tipo=listar');
         let json = await respuesta.json();
         if (json.status) {
             let datos = json.contenido;
@@ -40,7 +40,7 @@ async function cargar_sedes_menu(id_sede=0) {
 }
 async function cargar_periodos_menu(id_periodo=0) {
     try {
-        let respuesta = await fetch(base_url + 'src/control/PeriodoAcademico.php?tipo=listar');
+        let respuesta = await fetch(base_url_server + 'src/control/PeriodoAcademico.php?tipo=listar');
         let json = await respuesta.json();
         if (json.status) {
             let datos = json.contenido;
