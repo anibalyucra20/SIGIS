@@ -39,6 +39,7 @@ if ($tipo == "buscar") {
     
 }
 if ($tipo == "validar_sesion") {
+    echo true;
     return true;
 }
 
