@@ -64,6 +64,8 @@ async function listar_docentesOrdenados() {
             datos.forEach(item => {
                 generarfilastabla(item, json.sedes, json.programas, json.sistemas, json.roles);
             });
+        } else if (json.msg == "Error_Sesion") {
+            alerta_sesion();
         } else {
             document.getElementById('tablas').innerHTML = `no se encontraron resultados`;
         }
@@ -98,6 +100,8 @@ async function datos_form() {
             listar_sedes(json.sedes);
             listar_programa_estudio(json.programas);
             listar_roles(json.roles);
+        } else {
+            alerta_sesion();
         }
         //console.log(respuesta);
     } catch (e) {
@@ -471,6 +475,8 @@ async function registrar_docente() {
                 timer: 1000
             });
 
+        } else if (json.msg == "Error_Sesion") {
+            alerta_sesion();
         } else {
             Swal.fire({
                 type: 'error',
@@ -535,6 +541,8 @@ async function actualizarUsuario(id) {
                 footer: '',
                 timer: 1000
             });
+        } else if (json.msg == "Error_Sesion") {
+            alerta_sesion();
         } else {
             Swal.fire({
                 type: 'error',
@@ -591,6 +599,8 @@ async function reniciar_password(id) {
                 footer: '',
                 confirmButtonText: "Aceptar"
             });
+        } else if (json.msg == "Error_Sesion") {
+            alerta_sesion();
         } else {
             Swal.fire({
                 type: 'error',
@@ -633,6 +643,8 @@ async function actualizar_permisos(id) {
                 footer: '',
                 timer: 1000
             });
+        } else if (json.msg == "Error_Sesion") {
+            alerta_sesion();
         } else {
             Swal.fire({
                 type: 'error',

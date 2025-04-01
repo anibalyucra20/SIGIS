@@ -23,8 +23,7 @@ async function alerta_sesion() {
         footer: '',
         timer: 1000
     });
-    setTimeout(2000);
-    window.open(base_url + "login", "_blank");
+    location.replace(base_url + "login");
 }
 // cargar elementos de menu
 async function cargar_sedes_menu(id_sede = 0) {
