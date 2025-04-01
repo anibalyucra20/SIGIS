@@ -261,7 +261,6 @@ async function actualizarPeriodo(id) {
         })
         return;
     }
-
     const formulario = document.getElementById('frmActualizar' + id);
     const datos = new FormData(formulario);
     datos.append('sesion', session_session);
