@@ -29,6 +29,8 @@
     <script>
         const base_url = '<?php echo BASE_URL; ?>';
         const base_url_server = '<?php echo BASE_URL_SERVER; ?>';
+        const session_session = '<?php echo $_SESSION['sesion_sigi_id']; ?>';
+        const token_token = '<?php echo $_SESSION['sesion_sigi_token']; ?>';
     </script>
 </head>
 
