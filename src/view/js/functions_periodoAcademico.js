@@ -14,7 +14,7 @@ async function listar_periodos() {
         formData.append('cantidad_mostrar', cantidad_mostrar);
         formData.append('busqueda_tabla', busqueda_tabla);
         formData.append('sesion', session_session);
-        formData.append('token_token', busqueda_tabla);
+        formData.append('token', token_token);
         //enviar datos hacia el controlador
         let respuesta = await fetch(base_url_server + 'src/control/PeriodoAcademico.php?tipo=listar_tabla', {
             method: 'POST',
