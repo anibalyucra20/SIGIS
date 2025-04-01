@@ -15,16 +15,24 @@ function ocultarPopupCarga() {
 }
 
 // cargar elementos de menu
-async function cargar_sedes_menu(id_sede=0) {
+async function cargar_sedes_menu(id_sede = 0) {
+    const formData = new FormData();
+    formData.append('sesion', session_session);
+    formData.append('token', token_token);
     try {
-        let respuesta = await fetch(base_url_server + 'src/control/Sede.php?tipo=listar');
+        let respuesta = await fetch(base_url_server + 'src/control/Sede.php?tipo=listar', {
+            method: 'POST',
+            mode: 'cors',
+            cache: 'no-cache',
+            body: formData
+        });
         let json = await respuesta.json();
         if (json.status) {
             let datos = json.contenido;
-            let contenido ='';
-            let sede ='';
+            let contenido = '';
+            let sede = '';
             datos.forEach(item => {
-                if (id_sede==item.id) {
+                if (id_sede == item.id) {
                     sede = item.nombre;
                 }
                 contenido += `<button href="javascript:void(0);" class="dropdown-item notify-item" onclick="actualizar_sede_menu(${item.id});">${item.nombre}</button>`;
@@ -36,21 +44,29 @@ async function cargar_sedes_menu(id_sede=0) {
     } catch (e) {
         console.log("Error al cargar categorias" + e);
     }
-    
+
 }
-async function cargar_periodos_menu(id_periodo=0) {
+async function cargar_periodos_menu(id_periodo = 0) {
+    const formData = new FormData();
+    formData.append('sesion', session_session);
+    formData.append('token', token_token);
     try {
-        let respuesta = await fetch(base_url_server + 'src/control/PeriodoAcademico.php?tipo=listar');
+        let respuesta = await fetch(base_url_server + 'src/control/PeriodoAcademico.php?tipo=listar', {
+            method: 'POST',
+            mode: 'cors',
+            cache: 'no-cache',
+            body: formData
+        });
         let json = await respuesta.json();
         if (json.status) {
             let datos = json.contenido;
-            let contenido ='';
-            let periodo ='';
+            let contenido = '';
+            let periodo = '';
             datos.forEach(item => {
                 contenido += `<button href="javascript:void(0);" class="dropdown-item notify-item" onclick="actualizar_periodo_menu(${item.id});">${item.nombre}</button>`;
-                if (id_periodo==item.id) {
+                if (id_periodo == item.id) {
                     periodo = item.nombre;
-                    
+
                 }
             });
             document.getElementById('contenido_menu_periodo').innerHTML = contenido;
@@ -159,10 +175,10 @@ function generar_texto_paginacion(total, cantidad_mostrar) {
     let paginas = Math.ceil(total / cantidad_mostrar);
     let iniciar = (actual - 1) * cantidad_mostrar;
     if (actual < paginas) {
-        
-        var texto = '<label>Mostrando del ' + (parseInt(iniciar)+1) + ' al ' + ((parseInt(iniciar)+1) + 9) + ' de un total de ' + total + ' registros</label>';
+
+        var texto = '<label>Mostrando del ' + (parseInt(iniciar) + 1) + ' al ' + ((parseInt(iniciar) + 1) + 9) + ' de un total de ' + total + ' registros</label>';
     } else {
-        var texto = '<label>Mostrando del ' + (parseInt(iniciar)+1) + ' al ' + total + ' de un total de ' + total + ' registros</label>';
+        var texto = '<label>Mostrando del ' + (parseInt(iniciar) + 1) + ' al ' + total + ' de un total de ' + total + ' registros</label>';
     }
     return texto;
 }
