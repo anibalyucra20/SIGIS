@@ -48,7 +48,6 @@ async function iniciar_sesion() {
                 footer: '',
                 timer: 1500
             })
-
         }
         //console.log(respuesta);
     } catch (e) {
