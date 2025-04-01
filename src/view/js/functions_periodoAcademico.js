@@ -45,9 +45,9 @@ async function listar_periodos() {
             datos.forEach(item => {
                 generarfilastabla(item, json.directores);
             });
-        } else if(json.msg == "Error_Sesion") {
+        } else if (json.msg == "Error_Sesion") {
             alerta_sesion();
-        }else{
+        } else {
             document.getElementById('tablas').innerHTML = `no se encontraron resultados`;
         }
         let paginacion = generar_paginacion(json.total, cantidad_mostrar);
@@ -191,6 +191,8 @@ async function registrar_periodo() {
 
 
 
+        } else if (json.msg == "Error_Sesion") {
+            alerta_sesion();
         } else {
             Swal.fire({
                 type: 'error',
@@ -232,6 +234,8 @@ async function listar_director(id = "", id2 = 0) {
                 contenido_select += '<option value="' + element.id + '" ' + selected + '>' + element.apellidos_nombres + '</option>';
             });
             document.getElementById('director' + id).innerHTML = contenido_select;
+        } else {
+            alerta_sesion();
         }
         //console.log(respuesta);
     } catch (e) {
@@ -280,6 +284,8 @@ async function actualizarPeriodo(id) {
                 footer: '',
                 timer: 1000
             });
+        } else if (json.msg == "Error_Sesion") {
+            alerta_sesion();
         } else {
             Swal.fire({
                 type: 'error',
