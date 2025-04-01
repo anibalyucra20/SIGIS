@@ -29,6 +29,8 @@ async function listar_docentesOrdenados() {
         formData.append('busqueda_tabla_pe', busqueda_tabla_pe);
         formData.append('busqueda_tabla_estado', busqueda_tabla_estado);
         formData.append('busqueda_tabla_sede', busqueda_tabla_sede);
+        formData.append('sesion', session_session);
+        formData.append('token', token_token);
         //enviar datos hacia el controlador
         let respuesta = await fetch(base_url_server + 'src/control/Usuario.php?tipo=listar_docentes_ordenados_tabla', {
             method: 'POST',
@@ -82,7 +84,15 @@ async function listar_docentesOrdenados() {
 async function datos_form() {
     try {
         mostrarPopupCarga();
-        let respuesta = await fetch(base_url_server + 'src/control/Usuario.php?tipo=datos_registro');
+        const formData = new FormData();
+        formData.append('sesion', session_session);
+        formData.append('token', token_token);
+        let respuesta = await fetch(base_url_server + 'src/control/Usuario.php?tipo=datos_registro', {
+            method: 'POST',
+            mode: 'cors',
+            cache: 'no-cache',
+            body: formData
+        });
         let json = await respuesta.json();
         if (json.status) {
             listar_sedes(json.sedes);
@@ -440,6 +450,8 @@ async function registrar_docente() {
     try {
         // capturamos datos del formulario html
         const datos = new FormData(frmRegistrar);
+        datos.append('sesion', session_session);
+        datos.append('token', token_token);
         //enviar datos hacia el controlador
         let respuesta = await fetch(base_url_server + 'src/control/Usuario.php?tipo=registrar', {
             method: 'POST',
@@ -503,6 +515,8 @@ async function actualizarUsuario(id) {
     const formulario = document.getElementById('frmActualizar' + id);
     const datos = new FormData(formulario);
     datos.append('data', id);
+    datos.append('sesion', session_session);
+    datos.append('token', token_token);
     try {
         let respuesta = await fetch(base_url_server + 'src/control/Usuario.php?tipo=actualizar', {
             method: 'POST',
@@ -558,6 +572,8 @@ async function reniciar_password(id) {
     // generamos el formulario
     const formData = new FormData();
     formData.append('id', id);
+    formData.append('sesion', session_session);
+    formData.append('token', token_token);
     try {
         let respuesta = await fetch(base_url_server + 'src/control/Usuario.php?tipo=reiniciar_password', {
             method: 'POST',
@@ -597,6 +613,8 @@ async function actualizar_permisos(id) {
     const formulario = document.getElementById('frm_permisos_' + id);
     const datos = new FormData(formulario);
     datos.append('data', id);
+    datos.append('sesion', session_session);
+    datos.append('token', token_token);
     try {
         let respuesta = await fetch(base_url_server + 'src/control/Usuario.php?tipo=actualizar_permisos', {
             method: 'POST',

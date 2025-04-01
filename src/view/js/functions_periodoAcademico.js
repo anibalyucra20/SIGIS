@@ -45,7 +45,9 @@ async function listar_periodos() {
             datos.forEach(item => {
                 generarfilastabla(item, json.directores);
             });
-        } else {
+        } else if(json.msg == "Error_Sesion") {
+            alerta_sesion();
+        }else{
             document.getElementById('tablas').innerHTML = `no se encontraron resultados`;
         }
         let paginacion = generar_paginacion(json.total, cantidad_mostrar);

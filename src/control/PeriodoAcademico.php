@@ -8,12 +8,14 @@ $tipo = $_REQUEST['tipo'];
 $objPeriodoAcademico = new PeriodoAcademicoModel();
 $objUsuario = new UsuarioModel();
 $objSesion = new SessionModel();
+
+//variables de sesion
 $id_sesion = $_POST['sesion'];
 $token = $_POST['token'];
 
 if ($tipo == "listar_tabla") {
     //repuesta
-    $arr_Respuesta = array('status' => false, 'contenido' => 'Error_Sesion');
+    $arr_Respuesta = array('status' => false, 'msg' => 'Error_Sesion');
     if ($objSesion->verificar_sesion_si_activa($id_sesion, $token)) {
         //print_r($_POST);
         $pagina = $_POST['pagina'];
@@ -59,7 +61,6 @@ if ($tipo == "listar") {
 
         //print_r($_POST);
         //repuesta
-        $arr_Respuesta = array('status' => false, 'contenido' => '');
         $arr_Periodos = $objPeriodoAcademico->buscarPeriodoAcademico();
         if (!empty($arr_Periodos)) {
             // recorremos el array para agregar las opciones
@@ -76,7 +77,7 @@ if ($tipo == "listar") {
     echo json_encode($arr_Respuesta);
 }
 if ($tipo == "registrar") {
-    $arr_Respuesta = array('status' => false, 'contenido' => 'Error_Sesion');
+    $arr_Respuesta = array('status' => false, 'msg' => 'Error_Sesion');
     if ($objSesion->verificar_sesion_si_activa($id_sesion, $token)) {
         //print_r($_POST);
         $anio = $_POST['anio'];
@@ -110,7 +111,7 @@ if ($tipo == "registrar") {
     echo json_encode($arr_Respuesta);
 }
 if ($tipo == "actualizar") {
-    $arr_Respuesta = array('status' => false, 'contenido' => 'Error_Sesion');
+    $arr_Respuesta = array('status' => false, 'msg' => 'Error_Sesion');
     if ($objSesion->verificar_sesion_si_activa($id_sesion, $token)) {
         //print_r($_POST);
         $id = $_POST['id'];

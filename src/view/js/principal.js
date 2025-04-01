@@ -5,7 +5,6 @@ function mostrarPopupCarga() {
         popup.style.display = 'flex';
     }
 }
-
 // Ocultar el popup de carga
 function ocultarPopupCarga() {
     const popup = document.getElementById('popup-carga');
@@ -14,6 +13,18 @@ function ocultarPopupCarga() {
     }
 }
 
+//funcion en caso de session acudacada
+async function alerta_sesion() {
+    Swal.fire({
+        type: 'error',
+        title: 'Error de Sesión',
+        text: "Sesión Caducada, Por favor inicie sesión",
+        confirmButtonClass: 'btn btn-confirm mt-2',
+        footer: '',
+        timer: 1000
+    });
+    window.open(base_url + "login", "_blank");
+}
 // cargar elementos de menu
 async function cargar_sedes_menu(id_sede = 0) {
     const formData = new FormData();
@@ -82,9 +93,7 @@ async function cargar_datos_menu(sede, periodo) {
     cargar_sedes_menu(sede);
     cargar_periodos_menu(periodo);
 }
-
 // actualizar elementos del menu
-
 async function actualizar_sede_menu(id) {
     const formData = new FormData();
     formData.append('id_sede', id);
@@ -123,7 +132,6 @@ async function actualizar_periodo_menu(id) {
         console.log("Error al cargar categorias" + e);
     }
 }
-
 function generar_paginacion(total, cantidad_mostrar) {
     let actual = document.getElementById('pagina').value;
     let paginas = Math.ceil(total / cantidad_mostrar);
@@ -182,7 +190,6 @@ function generar_texto_paginacion(total, cantidad_mostrar) {
     }
     return texto;
 }
-
 // ---------------------------------------------  DATOS DE CARGA PARA FILTRO DE BUSQUEDA -----------------------------------------------
 //cargar programas de estudio
 function cargar_programa_estudio_filtro(programas) {

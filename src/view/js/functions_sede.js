@@ -1,7 +1,16 @@
 async function listar_sedes() {
+
     try {
         mostrarPopupCarga();
-        let respuesta = await fetch(base_url_server + 'src/control/Sede.php?tipo=listar');
+        const formData = new FormData();
+        formData.append('sesion', session_session);
+        formData.append('token', token_token);
+        let respuesta = await fetch(base_url_server + 'src/control/Sede.php?tipo=listar', {
+            method: 'POST',
+            mode: 'cors',
+            cache: 'no-cache',
+            body: formData
+        });
         let json = await respuesta.json();
         if (json.status) {
             let datos = json.contenido;
@@ -139,7 +148,15 @@ function generarfilastabla(item) {
 
 async function listar_director(id = "", id2 = 0) {
     try {
-        let respuesta = await fetch(base_url_server + 'src/control/Usuario.php?tipo=listar_director');
+        const formData = new FormData();
+        formData.append('sesion', session_session);
+        formData.append('token', token_token);
+        let respuesta = await fetch(base_url_server + 'src/control/Usuario.php?tipo=listar_director', {
+            method: 'POST',
+            mode: 'cors',
+            cache: 'no-cache',
+            body: formData
+        });
         json = await respuesta.json();
         if (json.status) {
             let datos = json.contenido;
@@ -182,6 +199,8 @@ async function registrar_sede() {
     try {
         // capturamos datos del formulario html
         const datos = new FormData(frmRegistrar);
+        datos.append('sesion', session_session);
+        datos.append('token', token_token);
         //enviar datos hacia el controlador
         let respuesta = await fetch(base_url_server + 'src/control/Sede.php?tipo=registrar', {
             method: 'POST',
@@ -250,6 +269,8 @@ async function actualizarSede(id) {
 
     const formulario = document.getElementById('frmActualizar' + id);
     const datos = new FormData(formulario);
+    datos.append('sesion', session_session);
+    datos.append('token', token_token);
     try {
         let respuesta = await fetch(base_url_server + 'src/control/Sede.php?tipo=actualizar', {
             method: 'POST',
