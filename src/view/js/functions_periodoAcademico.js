@@ -166,6 +166,8 @@ async function registrar_periodo() {
     try {
         // capturamos datos del formulario html
         const datos = new FormData(frmRegistrar);
+        datos.append('sesion', session_session);
+        datos.append('token', token_token);
         //enviar datos hacia el controlador
         let respuesta = await fetch(base_url_server + 'src/control/PeriodoAcademico.php?tipo=registrar', {
             method: 'POST',
@@ -205,8 +207,17 @@ async function registrar_periodo() {
 
 
 async function listar_director(id = "", id2 = 0) {
+    // generamos el formulario
+    const formData = new FormData();
+    formData.append('sesion', session_session);
+    formData.append('token', token_token);
     try {
-        let respuesta = await fetch(base_url_server + 'src/control/Usuario.php?tipo=listar_director');
+        let respuesta = await fetch(base_url_server + 'src/control/Usuario.php?tipo=listar_director', {
+            method: 'POST',
+            mode: 'cors',
+            cache: 'no-cache',
+            body: formData
+        });
         json = await respuesta.json();
         if (json.status) {
             let datos = json.contenido;
@@ -247,6 +258,8 @@ async function actualizarPeriodo(id) {
 
     const formulario = document.getElementById('frmActualizar' + id);
     const datos = new FormData(formulario);
+    datos.append('sesion', session_session);
+    datos.append('token', token_token);
     try {
         let respuesta = await fetch(base_url_server + 'src/control/PeriodoAcademico.php?tipo=actualizar', {
             method: 'POST',
