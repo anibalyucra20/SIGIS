@@ -1,5 +1,4 @@
 async function listar_sedes() {
-
     try {
         mostrarPopupCarga();
         const formData = new FormData();
@@ -14,7 +13,6 @@ async function listar_sedes() {
         let json = await respuesta.json();
         if (json.status) {
             let datos = json.contenido;
-
             document.getElementById('tablas').innerHTML = `<table id="example" class="table dt-responsive" width="100%">
                     <thead>
                         <tr>
@@ -32,7 +30,6 @@ async function listar_sedes() {
                     </tbody>
                 </table>`;
             datos.forEach(item => {
-
                 generarfilastabla(item);
             });
         } else {
