@@ -1,7 +1,7 @@
 <?php
 require_once "../library/conexion.php";
 
-class RolModel
+class RolesModel
 {
 
     private $conexion;
@@ -11,6 +11,16 @@ class RolModel
         $this->conexion = $this->conexion->connect();
     }
 
+    public function listarRolesSimple()
+    {
+        $roles = [];
+        $sql = "SELECT id, nombre FROM sigi_roles ORDER BY nombre";
+        $res = $this->conexion->query($sql);
+        while ($fila = $res->fetch_object()) {
+            $roles[] = $fila;
+        }
+        return $roles;
+    }
     public function buscarRoles()
     {
         $arrRespuesta = array();

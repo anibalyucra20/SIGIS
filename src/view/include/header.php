@@ -91,6 +91,7 @@
                         <div class="dropdown d-inline-block">
                             <button type="button" class="btn header-item waves-effect waves-light"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <input type="hidden" id="id_periodo_actual_menu" value="0">
                                 <span class="d-none d-sm-inline-block ml-1" id="menu_periodo">2023-II</span>
                                 <i class="mdi mdi-chevron-down d-none d-sm-inline-block"></i>
                             </button>

@@ -1,349 +1,389 @@
 <?php
-session_start();
-require_once('../model/admin-sesionModel.php');
+// src/control/Usuario.php
+
 require_once('../model/admin-usuarioModel.php');
+require_once('../model/admin-rolesModel.php');
 require_once('../model/admin-sedeModel.php');
 require_once('../model/admin-programaEstudioModel.php');
-require_once('../model/admin-rolesModel.php');
-require_once('../model/admin-sistemasIntegradosModel.php');
-require_once('../model/adminModel.php');
-$tipo = $_GET['tipo'];
+require_once('../model/admin-periodoAcademicoModel.php');
+require_once('../model/admin-sesionModel.php');
 
-//instanciar la clase categoria model
-$objSesion = new SessionModel();
-$objUsuario = new UsuarioModel();
-$objSede = new SedeModel();
-$objProgramaEstudio = new ProgramaEstudioModel();
-$objRoles = new RolModel();
-$objSistemas = new SistemasIntegradosModel();
-$objAdmin = new AdminModel();
+$tipo       = $_REQUEST['tipo'];
+$objUser    = new UsuarioModel();
+$objRol     = new RolesModel();
+$objSede    = new SedeModel();
+$objProg    = new ProgramaEstudioModel();
+$objPeriodo = new PeriodoAcademicoModel();
+$objSes     = new SessionModel();
 
-//variables de sesion
-$id_sesion = $_POST['sesion'];
-$token = $_POST['token'];
+$id_sesion = $_POST['sesion'] ?? '';
+$token     = $_POST['token']   ?? '';
 
-if ($tipo == "listar_director") {
-    $arr_Respuesta = array('status' => false, 'msg' => 'Error_Sesion');
-    if ($objSesion->verificar_sesion_si_activa($id_sesion, $token)) {
-        //repuesta
-        $arr_Usuario = $objUsuario->buscarUsuarioDirector_All();
-        $arr_contenido = [];
-        if (!empty($arr_Usuario)) {
-            // recorremos el array para agregar las opciones de las categorias
-            for ($i = 0; $i < count($arr_Usuario); $i++) {
-                // definimos el elemento como objeto
-                $arr_contenido[$i] = (object) [];
-                // agregamos solo la informacion que se desea enviar a la vista
-                $arr_contenido[$i]->id = $arr_Usuario[$i]->id;
-                $arr_contenido[$i]->dni = $arr_Usuario[$i]->dni;
-                $arr_contenido[$i]->apellidos_nombres = $arr_Usuario[$i]->apellidos_nombres;
-                $arr_contenido[$i]->estado = $arr_Usuario[$i]->estado;
-                $opciones = '';
-                $arr_Usuario[$i]->options = $opciones;
-            }
-            $arr_Respuesta['status'] = true;
-            $arr_Respuesta['contenido'] = $arr_contenido;
+
+/*
+ * -------------------------------------------------------
+ * 1) datos_registro
+ *    Devuelve JSON con:
+ *      - roles (solo id y nombre, filtrados en JS)
+ *      - sedes  (id y nombre)
+ *      - periodos académicos (id y nombre)
+ *      - programas de estudio (id y nombre)
+ */
+if ($tipo === 'datos_registro') {
+    $arr_Respuesta = ['status' => false, 'contenido' => []];
+
+    if ($objSes->verificar_sesion_si_activa($id_sesion, $token)) {
+        // 1) Roles (id, nombre)
+        $listaRoles = $objRol->listarRolesSimple();
+        // 2) Sedes (id, nombre)
+        $listaSedes = $objSede->listarSedesSimple();
+        // 3) Períodos Académicos (id, nombre)
+        $rawPeriodos = $objPeriodo->buscarPeriodoAcademico();
+        $listaPeriodos = [];
+        foreach ($rawPeriodos as $p) {
+            $o = new stdClass();
+            $o->id     = $p->id;
+            $o->nombre = $p->nombre;
+            $listaPeriodos[] = $o;
         }
-    }
-    echo json_encode($arr_Respuesta);
-}
-if ($tipo == "datos_registro") {
-    $arr_Respuesta = array('status' => false, 'msg' => 'Error_Sesion');
-    if ($objSesion->verificar_sesion_si_activa($id_sesion, $token)) {
-        //repuesta
-        $arr_Sedes = $objSede->buscarSedes();
-        $arr_Respuesta['sedes'] = $arr_Sedes;
-        $arr_Pes = $objProgramaEstudio->buscarProgramaEstudios();
-        $arr_Respuesta['programas'] = $arr_Pes;
-        $arr_Roles = $objRoles->buscarRoles();
-        $arr_Respuesta['roles'] = $arr_Roles;
-        $arr_Sistemas = $objSistemas->buscarSistemas();
-        $arr_Respuesta['sistemas'] = $arr_Sistemas;
+        // 4) Programas de Estudio (id, nombre)
+        $listaProg = $objProg->listarProgramasSimple();
+
         $arr_Respuesta['status'] = true;
+        $arr_Respuesta['contenido'] = [
+            'roles'     => $listaRoles,
+            'sedes'     => $listaSedes,
+            'periodos'  => $listaPeriodos,
+            'programas' => $listaProg
+        ];
     }
+
     echo json_encode($arr_Respuesta);
-}
-if ($tipo == "listar_docentes_ordenados_tabla") {
-    $arr_Respuesta = array('status' => false, 'msg' => 'Error_Sesion');
-    if ($objSesion->verificar_sesion_si_activa($id_sesion, $token)) {
-        //print_r($_POST);
-        $pagina = $_POST['pagina'];
-        $cantidad_mostrar = $_POST['cantidad_mostrar'];
-        $busqueda_tabla_dni = $_POST['busqueda_tabla_dni'];
-        $busqueda_tabla_nomap = $_POST['busqueda_tabla_nomap'];
-        $busqueda_tabla_pe = $_POST['busqueda_tabla_pe'];
-        $busqueda_tabla_estado = $_POST['busqueda_tabla_estado'];
-        $busqueda_tabla_sede = $_POST['busqueda_tabla_sede'];
-        //repuesta
-        $arr_Respuesta = array('status' => false, 'contenido' => '');
-        $busqueda_filtro = $objUsuario->buscarUsuarioDocentesOrderByApellidosNombres_tabla_filtro($busqueda_tabla_dni, $busqueda_tabla_nomap, $busqueda_tabla_pe, $busqueda_tabla_estado, $busqueda_tabla_sede);
-        $arr_Usuario = $objUsuario->buscarUsuarioDocentesOrderByApellidosNombres_tabla($pagina, $cantidad_mostrar, $busqueda_tabla_dni, $busqueda_tabla_nomap, $busqueda_tabla_pe, $busqueda_tabla_estado, $busqueda_tabla_sede);
-        $arr_contenido = [];
-        if (!empty($arr_Usuario)) {
-            $arr_Sedes = $objSede->buscarSedes();
-            $arr_Respuesta['sedes'] = $arr_Sedes;
-            $arr_Pes = $objProgramaEstudio->buscarProgramaEstudios();
-            $arr_Respuesta['programas'] = $arr_Pes;
-            $arr_Roles = $objRoles->buscarRoles();
-            $arr_Respuesta['roles'] = $arr_Roles;
-            $arr_Sistemas = $objSistemas->buscarSistemas();
-            $arr_Respuesta['sistemas'] = $arr_Sistemas;
-            // recorremos el array para agregar las opciones de las categorias
-            for ($i = 0; $i < count($arr_Usuario); $i++) {
-                // definimos el elemento como objeto
-                $arr_contenido[$i] = (object) [];
-                // agregamos solo la informacion que se desea enviar a la vista
-                $arr_contenido[$i]->id = $arr_Usuario[$i]->id;
-                $arr_contenido[$i]->dni = $arr_Usuario[$i]->dni;
-                $arr_contenido[$i]->apellidos_nombres = $arr_Usuario[$i]->apellidos_nombres;
-                $arr_contenido[$i]->genero = $arr_Usuario[$i]->genero;
-                $arr_contenido[$i]->fecha_nac = $arr_Usuario[$i]->fecha_nac;
-                $arr_contenido[$i]->direccion = $arr_Usuario[$i]->direccion;
-                $arr_contenido[$i]->correo = $arr_Usuario[$i]->correo;
-                $arr_contenido[$i]->telefono = $arr_Usuario[$i]->telefono;
-                $arr_contenido[$i]->discapacidad = $arr_Usuario[$i]->discapacidad;
-                $arr_contenido[$i]->id_sede = $arr_Usuario[$i]->id_sede;
-                $arr_contenido[$i]->id_programa_estudios = $arr_Usuario[$i]->id_programa_estudios;
-                $arr_contenido[$i]->id_rol = $arr_Usuario[$i]->id_rol;
-                $arr_contenido[$i]->estado = $arr_Usuario[$i]->estado;
-
-                $id_sede = $arr_Usuario[$i]->id_sede;
-                $arr_Sede = $objSede->buscarSedeById($id_sede);
-                $arr_contenido[$i]->sede = $arr_Sede->nombre;
-
-                $id_pe = $arr_Usuario[$i]->id_programa_estudios;
-                $arr_Pe = $objProgramaEstudio->buscarProgramaEstudioById($id_pe);
-                $arr_contenido[$i]->programa_estudios = $arr_Pe->nombre;
-
-                $id_rol = $arr_Usuario[$i]->id_rol;
-                $arr_Rol = $objRoles->buscarRolById($id_rol);
-                $arr_contenido[$i]->rol = $arr_Rol->nombre;
-
-
-                $arr_contenido[$i]->permisos = [];
-                for ($j = 0; $j < count($arr_Sistemas); $j++) {
-                    $arr_Permisos = $objUsuario->buscarPermisoUsuarioByUsuarioSistema($arr_Usuario[$i]->id, $arr_Sistemas[$j]->id);
-                    if (!empty($arr_Permisos)) {
-                        $arr_contenido[$i]->permisos[$arr_Sistemas[$j]->id] = $arr_Permisos;
-                    }
-                }
-                $opciones = '<button type="button" title="Editar" class="btn btn-primary waves-effect waves-light" data-toggle="modal" data-target=".modal_editar' . $arr_Usuario[$i]->id . '"><i class="fa fa-edit"></i></button>
-                                <button type="button" title="Persimos" class="btn btn-light waves-effect waves-light" data-toggle="modal" data-target=".modal_permisos' . $arr_Usuario[$i]->id . '"><i class="fa fa-folder-open"></i></button>
-                                <button class="btn btn-info" title="Resetear Contraseña" onclick="reset_password(' . $arr_Usuario[$i]->id . ')"><i class="fa fa-key"></i></button>';
-                $arr_contenido[$i]->options = $opciones;
-            }
-            $arr_Respuesta['total'] = count($busqueda_filtro);
-            $arr_Respuesta['status'] = true;
-            $arr_Respuesta['contenido'] = $arr_contenido;
-        }
-    }
-    echo json_encode($arr_Respuesta);
-}
-if ($tipo == "listar_docentes_ordenados") {
-    $arr_Respuesta = array('status' => false, 'msg' => 'Error_Sesion');
-    if ($objSesion->verificar_sesion_si_activa($id_sesion, $token)) {
-        //repuesta
-        $arr_Respuesta = array('status' => false, 'contenido' => '');
-        $arr_Usuario = $objUsuario->buscarUsuarioDocentesOrderByApellidosNombres();
-        $arr_contenido = [];
-        if (!empty($arr_Usuario)) {
-
-            $arr_Sedes = $objSede->buscarSedes();
-            $arr_Respuesta['sedes'] = $arr_Sedes;
-            $arr_Pes = $objProgramaEstudio->buscarProgramaEstudios();
-            $arr_Respuesta['programas'] = $arr_Pes;
-            $arr_Roles = $objRoles->buscarRoles();
-            $arr_Respuesta['roles'] = $arr_Roles;
-            $arr_Sistemas = $objSistemas->buscarSistemas();
-            $arr_Respuesta['sistemas'] = $arr_Sistemas;
-            // recorremos el array para agregar las opciones de las categorias
-            for ($i = 0; $i < count($arr_Usuario); $i++) {
-                // definimos el elemento como objeto
-                $arr_contenido[$i] = (object) [];
-                // agregamos solo la informacion que se desea enviar a la vista
-                $arr_contenido[$i]->id = $arr_Usuario[$i]->id;
-                $arr_contenido[$i]->dni = $arr_Usuario[$i]->dni;
-                $arr_contenido[$i]->apellidos_nombres = $arr_Usuario[$i]->apellidos_nombres;
-                $arr_contenido[$i]->genero = $arr_Usuario[$i]->genero;
-                $arr_contenido[$i]->fecha_nac = $arr_Usuario[$i]->fecha_nac;
-                $arr_contenido[$i]->direccion = $arr_Usuario[$i]->direccion;
-                $arr_contenido[$i]->correo = $arr_Usuario[$i]->correo;
-                $arr_contenido[$i]->telefono = $arr_Usuario[$i]->telefono;
-                $arr_contenido[$i]->discapacidad = $arr_Usuario[$i]->discapacidad;
-                $arr_contenido[$i]->id_sede = $arr_Usuario[$i]->id_sede;
-                $arr_contenido[$i]->id_programa_estudios = $arr_Usuario[$i]->id_programa_estudios;
-                $arr_contenido[$i]->id_rol = $arr_Usuario[$i]->id_rol;
-                $arr_contenido[$i]->estado = $arr_Usuario[$i]->estado;
-            }
-            $arr_Respuesta['status'] = true;
-            $arr_Respuesta['contenido'] = $arr_contenido;
-        }
-    }
-    echo json_encode($arr_Respuesta);
+    exit;
 }
 
-if ($tipo == "registrar") {
-    $arr_Respuesta = array('status' => false, 'msg' => 'Error_Sesion');
-    if ($objSesion->verificar_sesion_si_activa($id_sesion, $token)) {
-        //print_r($_POST);
-        //repuesta
-        if ($_POST) {
-            $dni = $_POST['dni'];
-            $apellidos_nombres = $_POST['apellidos_nombres'];
-            $genero = $_POST['genero'];
-            $fecha_nac = $_POST['fecha_nac'];
-            $direccion = $_POST['direccion'];
-            $correo = $_POST['correo'];
-            $telefono = $_POST['telefono'];
-            $discapacidad = $_POST['discapacidad'];
-            $id_sede = $_POST['id_sede'];
-            $id_rol = $_POST['id_rol'];
-            $id_programa_estudios = $_POST['id_programa_estudios'];
-            $id_periodo_actual = $_SESSION['sesion_sigi_periodo'];
 
-            if ($dni == "" || $apellidos_nombres == "" || $genero == "" || $fecha_nac == "" || $direccion == "" || $correo == "" || $telefono == "" || $discapacidad == "" || $id_sede == "" || $id_rol == "" || $id_programa_estudios == "") {
-                //repuesta
-                $arr_Respuesta = array('status' => false, 'mensaje' => 'Error, campos vacíos');
-            } else {
-                $arr_Usuario = $objUsuario->buscarUsuarioByDni($dni);
-                if ($arr_Usuario) {
-                    $arr_Respuesta = array('status' => false, 'mensaje' => 'Registro Fallido, Usuario ya se encuentra registrado');
-                } else {
-                    $id_usuario = $objUsuario->registrarUsuario($dni, $apellidos_nombres, $genero, $fecha_nac, $direccion, $correo, $telefono, $discapacidad, $id_sede, $id_rol, $id_programa_estudios, $id_periodo_actual);
-                    if ($id_usuario > 0) {
-                        // array con los id de los sistemas al que tendra el acceso con su rol registrado
-                        // caso de administrador y director
-                        $array_sistemas_docente = [];
-                        if ($id_rol == 1 || $id_rol == 2) {
-                            $array_sistemas_permisos = [1, 2, 3, 4, 5, 6, 7];
-                        }
-                        // docentes 
-                        if ($id_rol >= 3 && $id_rol <= 6) {
-                            $array_sistemas_permisos = [2, 3, 4, 7];
-                        }
-                        //estudiantes
-                        if ($id_rol == 7) {
-                            $array_sistemas_permisos = [2, 3, 4];
-                        }
-                        for ($i = 0; $i < count($array_sistemas_permisos); $i++) {
-                            $id_sistema = $array_sistemas_permisos[$i];
-                            $registrar_permiso = $objUsuario->registrar_permiso($id_usuario, $id_sistema, $id_rol);
-                        }
+/*
+ * -------------------------------------------------------
+ * 2) registrar_docente
+ *    Recibe datos POST y registra un nuevo usuario en sigi_usuarios:
+ *      dni, apellidos_nombres, genero, fecha_nac, direccion,
+ *      correo, telefono, id_periodo_registro, id_programa_estudios,
+ *      discapacidad, id_rol, id_sede.
+ *    Genera contraseña aleatoria + hash, token_password + hash.
+ */
+if ($tipo === 'registrar_docente') {
+    $arr_Respuesta = ['status' => false, 'msg' => 'Error_Sesion'];
 
-                        $arr_Respuesta = array('status' => true, 'mensaje' => 'Registro Exitoso');
-                    } else {
-                        $arr_Respuesta = array('status' => false, 'mensaje' => 'Error al registrar producto');
-                    }
-                }
-            }
-        }
-    }
-    echo json_encode($arr_Respuesta);
-}
+    if ($objSes->verificar_sesion_si_activa($id_sesion, $token)) {
+        $dni                  = trim($_POST['dni'] ?? '');
+        $apellidos_nombres    = trim($_POST['apellidos_nombres'] ?? '');
+        $genero               = trim($_POST['genero'] ?? '');
+        $fecha_nac            = trim($_POST['fecha_nac'] ?? '');
+        $direccion            = trim($_POST['direccion'] ?? '');
+        $correo               = trim($_POST['correo'] ?? '');
+        $telefono             = trim($_POST['telefono'] ?? '');
+        $discapacidad         = trim($_POST['discapacidad'] ?? '');
+        $id_sede              = intval($_POST['id_sede'] ?? 0);
+        $id_rol               = intval($_POST['id_rol'] ?? 0);
+        $id_periodo_registro  = intval($_POST['id_periodo_registro'] ?? 0);
+        $id_programa_estudios = intval($_POST['id_programa_estudios'] ?? 0);
 
-if ($tipo == "actualizar") {
-    $arr_Respuesta = array('status' => false, 'msg' => 'Error_Sesion');
-    if ($objSesion->verificar_sesion_si_activa($id_sesion, $token)) {
-        //print_r($_POST);
-        //repuesta
-        if ($_POST) {
-            $id = $_POST['data'];
-            $dni = $_POST['dni'];
-            $apellidos_nombres = $_POST['apellidos_nombres'];
-            $genero = $_POST['genero'];
-            $fecha_nac = $_POST['fecha_nac'];
-            $direccion = $_POST['direccion'];
-            $correo = $_POST['correo'];
-            $telefono = $_POST['telefono'];
-            $discapacidad = $_POST['discapacidad'];
-            $id_sede = $_POST['id_sede'];
-            $id_rol = $_POST['id_rol'];
-            $id_programa_estudios = $_POST['id_programa_estudios'];
-            $estado = $_POST['estado'];
-
-            if ($id == "" || $dni == "" || $apellidos_nombres == "" || $genero == "" || $fecha_nac == "" || $direccion == "" || $correo == "" || $telefono == "" || $discapacidad == "" || $id_sede == "" || $id_rol == "" || $id_programa_estudios == "" || $estado == "") {
-                //repuesta
-                $arr_Respuesta = array('status' => false, 'mensaje' => 'Error, campos vacíos');
-            } else {
-                $arr_Usuario = $objUsuario->buscarUsuarioByDni($dni);
-                if ($arr_Usuario) {
-                    if ($arr_Usuario->id == $id) {
-                        $consulta = $objUsuario->actualizarUsuario($id, $dni, $apellidos_nombres, $genero, $fecha_nac, $direccion, $correo, $telefono, $discapacidad, $id_sede, $id_rol, $id_programa_estudios, $estado);
-                        if ($consulta) {
-                            $arr_Respuesta = array('status' => true, 'mensaje' => 'Actualizado Correctamente');
-                        } else {
-                            $arr_Respuesta = array('status' => false, 'mensaje' => 'Error al actualizar registro');
-                        }
-                    } else {
-                        $arr_Respuesta = array('status' => false, 'mensaje' => 'dni ya esta registrado');
-                    }
-                } else {
-                    $consulta = $objUsuario->actualizarUsuario($id, $dni, $apellidos_nombres, $genero, $fecha_nac, $direccion, $correo, $telefono, $discapacidad, $id_sede, $id_rol, $id_programa_estudios, $estado);
-                    if ($consulta) {
-                        $arr_Respuesta = array('status' => true, 'mensaje' => 'Actualizado Correctamente');
-                    } else {
-                        $arr_Respuesta = array('status' => false, 'mensaje' => 'Error al actualizar registro');
-                    }
-                }
-            }
-        }
-    }
-    echo json_encode($arr_Respuesta);
-}
-if ($tipo == "reiniciar_password") {
-    $arr_Respuesta = array('status' => false, 'msg' => 'Error_Sesion');
-    if ($objSesion->verificar_sesion_si_activa($id_sesion, $token)) {
-        //print_r($_POST);
-        $id_usuario = $_POST['id'];
-        $password = $objAdmin->generar_llave(10);
-        $pass_secure = password_hash($password, PASSWORD_DEFAULT);
-        $actualizar = $objUsuario->actualizarPassword($id_usuario, $pass_secure);
-        if ($actualizar) {
-            $arr_Respuesta = array('status' => true, 'mensaje' => 'Contraseña actualizado correctamente a: ' . $password);
+        // Validación mínima en servidor
+        if (
+            $dni === '' ||
+            $apellidos_nombres === '' ||
+            !in_array($genero, ['M','F']) ||
+            $fecha_nac === '' ||
+            $direccion === '' ||
+            $correo === '' ||
+            $telefono === '' ||
+            !in_array($discapacidad, ['SI','NO']) ||
+            $id_sede <= 0 ||
+            $id_rol <= 0 ||
+            $id_periodo_registro <= 0 ||
+            $id_programa_estudios <= 0
+        ) {
+            $arr_Respuesta['status'] = false;
+            $arr_Respuesta['msg']    = 'Error, campos vacíos o inválidos.';
         } else {
-            $arr_Respuesta = array('status' => false, 'mensaje' => 'Hubo un problema al actualizar la contraseña, intente nuevamente');
-        }
-    }
-    echo json_encode($arr_Respuesta);
-}
+            // 1) Generar contraseña aleatoria (8 caracteres) + hash
+            $clavePlano = $objUser->generar_llave(8);
+            $hashPwd    = password_hash($clavePlano, PASSWORD_DEFAULT);
+            // 2) Generar token_password de 30 caracteres + hash
+            $tokenPwd   = bin2hex(random_bytes(15));
+            $hashToken  = password_hash($tokenPwd, PASSWORD_DEFAULT);
 
-// ----------------------------------------------  INICIO PERMISOS ------------------------------------------------
-if ($tipo == "actualizar_permisos") {
-    $arr_Respuesta = array('status' => false, 'msg' => 'Error_Sesion');
-    if ($objSesion->verificar_sesion_si_activa($id_sesion, $token)) {
-        //print_r($_POST);
-        $id_usuario = $_POST['data'];
-        //repuesta
-        $arr_sistemas = $objSistemas->buscarSistemas();
-        for ($i = 0; $i < count($arr_sistemas); $i++) {
-            $id_sistema = $arr_sistemas[$i]->id;
-            $sistema = $_POST[$arr_sistemas[$i]->codigo . $id_usuario];
-            $rol = $_POST['rol' . $arr_sistemas[$i]->codigo . $id_usuario];
-            if ($sistema) {
-                // en caso de que el sistema este habilitado ACTUALIZAR O REGISTRAR
-                $buscar_permiso = $objUsuario->buscarPermisoUsuarioByUsuarioSistema($id_usuario, $id_sistema);
-                if ($buscar_permiso) {
-                    $id_permiso = $buscar_permiso->id;
-                    $actualizar_permiso = $objUsuario->actualizarPermisoUsuarioByUsuarioSistemaRol($id_permiso, $rol);
-                } else {
-                    if ($rol == 0) {
-                        $rol = 5;
-                    }
-                    $registrar_permiso = $objUsuario->registrar_permiso($id_usuario, $id_sistema, $rol);
-                }
+            // 3) Insertar en base de datos
+            $ok = $objUser->insertarUsuario(
+                $dni,
+                $apellidos_nombres,
+                $genero,
+                $fecha_nac,
+                $direccion,
+                $correo,
+                $telefono,
+                $id_periodo_registro,
+                $id_programa_estudios,
+                $discapacidad,
+                $id_rol,
+                $id_sede,
+                1,           // estado = 1 (activo)
+                $hashPwd,    // password (hasheado)
+                0,           // reset_password = 0 (no requiere cambio)
+                $hashToken   // token_password (hasheado)
+            );
+            if ($ok) {
+                // (Opcional) Enviar $tokenPwd al correo de usuario para recuperación
+                $arr_Respuesta['status'] = true;
+                $arr_Respuesta['msg']    = 'Usuario creado y contraseña enviada.';
             } else {
-                // en caso el sistema no este habilitado ELIMINAR
-                $buscar_permiso = $objUsuario->buscarPermisoUsuarioByUsuarioSistema($id_usuario, $id_sistema);
-                if ($buscar_permiso) {
-                    $id_permiso = $buscar_permiso->id;
-                    $actualizar_permiso = $objUsuario->eliminarPermisoUsuarioByUsuarioSistemaRol($id_permiso);
-                }
+                $arr_Respuesta['status'] = false;
+                $arr_Respuesta['msg']    = 'Error al registrar usuario.';
             }
         }
-        $arr_Respuesta = array('status' => true, 'mensaje' => 'Permisos Actualizados correctamente');
     }
+
     echo json_encode($arr_Respuesta);
+    exit;
 }
 
 
-// ---------------------------------------------- FIN PERMISOS ---------------------------------------------------
+/*
+ * -------------------------------------------------------
+ * 3) datos_filtros
+ *    Devuelve JSON con listas de:
+ *      - programas de estudio (id, nombre)
+ *      - sedes (id, nombre)
+ *    (para poblar los <select> de filtros antes de listar).
+ */
+if ($tipo === 'datos_filtros') {
+    $arr_Respuesta = ['status' => false, 'contenido' => []];
+
+    if ($objSes->verificar_sesion_si_activa($id_sesion, $token)) {
+        // Programas de Estudio
+        $listaProg  = $objProg->listarProgramasSimple();
+        // Sedes
+        $listaSedes = $objSede->listarSedesSimple();
+
+        $arr_Respuesta['status'] = true;
+        $arr_Respuesta['contenido'] = [
+            'programas' => $listaProg,
+            'sedes'     => $listaSedes
+        ];
+    }
+
+    echo json_encode($arr_Respuesta);
+    exit;
+}
+
+
+/*
+ * -------------------------------------------------------
+ * 4) listar_tabla_docentes
+ *    Lista usuarios (docentes y administradores) con filtros y paginación.
+ *    Parámetros POST:
+ *      pagina, cantidad_mostrar,
+ *      filtro_dni, filtro_nomap, filtro_pe, filtro_estado, filtro_sede
+ */
+if ($tipo === 'listar_tabla_docentes') {
+    $arr_Respuesta = ['status' => false, 'contenido' => [], 'total' => 0];
+
+    if ($objSes->verificar_sesion_si_activa($id_sesion, $token)) {
+        $pagina         = intval($_POST['pagina'] ?? 1);
+        $cantidad       = intval($_POST['cantidad_mostrar'] ?? 10);
+        $filtro_dni     = $objUser->conexion->real_escape_string(trim($_POST['filtro_dni'] ?? ''));
+        $filtro_nomap   = $objUser->conexion->real_escape_string(trim($_POST['filtro_nomap'] ?? ''));
+        $filtro_pe      = intval($_POST['filtro_pe'] ?? 0);
+        $filtro_estado  = trim($_POST['filtro_estado'] ?? '');
+        $filtro_sede    = intval($_POST['filtro_sede'] ?? 0);
+
+        // Construir cláusula WHERE dinámica
+        $where = "WHERE 1=1 ";
+        if ($filtro_dni !== '') {
+            $where .= "AND u.dni LIKE '%{$filtro_dni}%' ";
+        }
+        if ($filtro_nomap !== '') {
+            $where .= "AND u.apellidos_nombres LIKE '%{$filtro_nomap}%' ";
+        }
+        if ($filtro_pe > 0) {
+            $where .= "AND u.id_programa_estudios = {$filtro_pe} ";
+        }
+        if ($filtro_estado !== '') {
+            $where .= "AND u.estado = {$filtro_estado} ";
+        }
+        if ($filtro_sede > 0) {
+            $where .= "AND u.id_sede = {$filtro_sede} ";
+        }
+
+        // Calcular total de registros sin límite
+        $sqlCount = "
+            SELECT COUNT(*) AS total 
+            FROM sigi_usuarios u
+            {$where}
+        ";
+        $resCount = $objUser->conexion->query($sqlCount);
+        $rowCount = $resCount->fetch_object();
+        $totalRegistros = intval($rowCount->total);
+
+        if ($totalRegistros > 0) {
+            $offset = ($pagina - 1) * $cantidad;
+            // Consulta con JOINs para traer nombres relacionados
+            $sql = "
+                SELECT 
+                    u.id,
+                    u.dni,
+                    u.apellidos_nombres,
+                    u.genero,
+                    u.fecha_nac,
+                    u.direccion,
+                    u.correo,
+                    u.telefono,
+                    u.discapacidad,
+                    u.id_programa_estudios,
+                    p.nombre AS programa_nombre,
+                    u.id_periodo_registro,
+                    per.nombre AS periodo_nombre,
+                    u.id_rol,
+                    r.nombre AS rol_nombre,
+                    u.id_sede,
+                    s.nombre AS sede_nombre,
+                    u.estado
+                FROM sigi_usuarios u
+                LEFT JOIN sigi_programa_estudios p ON u.id_programa_estudios = p.id
+                LEFT JOIN sigi_periodo_academico per ON u.id_periodo_registro = per.id
+                LEFT JOIN sigi_roles r ON u.id_rol = r.id
+                LEFT JOIN sigi_sedes s ON u.id_sede = s.id
+                {$where}
+                ORDER BY u.apellidos_nombres
+                LIMIT {$offset}, {$cantidad}
+            ";
+            $res = $objUser->conexion->query($sql);
+            $usuarios = [];
+            while ($fila = $res->fetch_object()) {
+                $usuarios[] = $fila;
+            }
+            $arr_Respuesta['status']    = true;
+            $arr_Respuesta['contenido'] = $usuarios;
+            $arr_Respuesta['total']     = $totalRegistros;
+        } else {
+            // No hay resultados que mostrar
+            $arr_Respuesta['status']    = true;
+            $arr_Respuesta['contenido'] = [];
+            $arr_Respuesta['total']     = 0;
+        }
+    }
+
+    echo json_encode($arr_Respuesta);
+    exit;
+}
+
+
+/*
+ * -------------------------------------------------------
+ * 5) ver_usuario
+ *    Retorna todos los datos de un usuario (sin password ni token) según su ID.
+ *    Parámetro POST: id (int)
+ */
+if ($tipo === 'ver_usuario') {
+    $arr_Respuesta = ['status' => false, 'contenido' => null, 'msg' => 'Error_Sesion'];
+
+    if ($objSes->verificar_sesion_si_activa($id_sesion, $token)) {
+        $id = intval($_POST['id'] ?? 0);
+        if ($id > 0) {
+            $usuario = $objUser->obtenerUsuarioPorId($id);
+            if ($usuario) {
+                $arr_Respuesta['status']     = true;
+                $arr_Respuesta['contenido']  = $usuario;
+            } else {
+                $arr_Respuesta['msg'] = 'Usuario no encontrado.';
+            }
+        } else {
+            $arr_Respuesta['msg'] = 'ID inválido.';
+        }
+    }
+
+    echo json_encode($arr_Respuesta);
+    exit;
+}
+
+
+/*
+ * -------------------------------------------------------
+ * 6) actualizar_usuario
+ *    Recibe datos POST de un usuario existente y actualiza todos sus campos
+ *    (excepto password/token). Parámetros:
+ *      id, dni, apellidos_nombres, genero, fecha_nac, direccion, correo, telefono,
+ *      id_periodo_registro, id_programa_estudios, discapacidad, id_rol, id_sede, estado
+ */
+if ($tipo === 'actualizar_usuario') {
+    $arr_Respuesta = ['status' => false, 'msg' => 'Error_Sesion'];
+
+    if ($objSes->verificar_sesion_si_activa($id_sesion, $token)) {
+        // Leer campos
+        $id                   = intval($_POST['id'] ?? 0);
+        $dni                  = trim($_POST['dni'] ?? '');
+        $apellidos_nombres    = trim($_POST['apellidos_nombres'] ?? '');
+        $genero               = trim($_POST['genero'] ?? '');
+        $fecha_nac            = trim($_POST['fecha_nac'] ?? '');
+        $direccion            = trim($_POST['direccion'] ?? '');
+        $correo               = trim($_POST['correo'] ?? '');
+        $telefono             = trim($_POST['telefono'] ?? '');
+        $id_periodo_registro  = intval($_POST['id_periodo_registro'] ?? 0);
+        $id_programa_estudios = intval($_POST['id_programa_estudios'] ?? 0);
+        $discapacidad         = trim($_POST['discapacidad'] ?? '');
+        $id_rol               = intval($_POST['id_rol'] ?? 0);
+        $id_sede              = intval($_POST['id_sede'] ?? 0);
+        $estado               = trim($_POST['estado'] ?? '');
+
+        // Validación mínima
+        if (
+            $id > 0 &&
+            $dni !== '' &&
+            $apellidos_nombres !== '' &&
+            in_array($genero, ['M','F']) &&
+            $fecha_nac !== '' &&
+            $direccion !== '' &&
+            $correo !== '' &&
+            $telefono !== '' &&
+            $id_periodo_registro > 0 &&
+            $id_programa_estudios > 0 &&
+            in_array($discapacidad, ['SI','NO']) &&
+            $id_rol > 0 &&
+            $id_sede > 0 &&
+            in_array($estado, ['1','0'])
+        ) {
+            $ok = $objUser->actualizarUsuario(
+                $id,
+                $dni,
+                $apellidos_nombres,
+                $genero,
+                $fecha_nac,
+                $direccion,
+                $correo,
+                $telefono,
+                $id_periodo_registro,
+                $id_programa_estudios,
+                $discapacidad,
+                $id_rol,
+                $id_sede,
+                $estado
+            );
+            if ($ok) {
+                $arr_Respuesta['status'] = true;
+                $arr_Respuesta['msg']    = 'Usuario actualizado correctamente.';
+            } else {
+                $arr_Respuesta['status'] = false;
+                $arr_Respuesta['msg']    = 'Error al actualizar el usuario.';
+            }
+        } else {
+            $arr_Respuesta['status'] = false;
+            $arr_Respuesta['msg']    = 'Datos inválidos o campos vacíos.';
+        }
+    }
+
+    echo json_encode($arr_Respuesta);
+    exit;
+}
+
+// … aquí pueden venir otros casos (login, eliminar_usuario, etc.) …

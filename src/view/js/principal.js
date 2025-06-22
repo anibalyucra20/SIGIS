@@ -49,6 +49,7 @@ async function cargar_sedes_menu(id_sede = 0) {
                 contenido += `<button href="javascript:void(0);" class="dropdown-item notify-item" onclick="actualizar_sede_menu(${item.id});">${item.nombre}</button>`;
             });
             document.getElementById('contenido_menu_sede').innerHTML = contenido;
+            
             document.getElementById('menu_sede').innerHTML = sede;
         }
         //console.log(respuesta);
@@ -80,6 +81,7 @@ async function cargar_periodos_menu(id_periodo = 0) {
 
                 }
             });
+            document.getElementById('id_periodo_actual_menu').value = id_periodo;
             document.getElementById('contenido_menu_periodo').innerHTML = contenido;
             document.getElementById('menu_periodo').innerHTML = periodo;
         }
@@ -108,6 +110,7 @@ async function actualizar_sede_menu(id) {
         if (json.status) {
             location.reload();
         }
+        
         //console.log(respuesta);
     } catch (e) {
         console.log("Error al cargar categorias" + e);
@@ -127,6 +130,7 @@ async function actualizar_periodo_menu(id) {
         if (json.status) {
             location.reload();
         }
+        document.getElementById('id_periodo_actual_menu').value = id;
         //console.log(respuesta);
     } catch (e) {
         console.log("Error al cargar categorias" + e);

@@ -66,7 +66,7 @@ if ($tipo == "listar") {
             // recorremos el array para agregar las opciones
             for ($i = 0; $i < count($arr_Periodos); $i++) {
                 $id_director = $arr_Periodos[$i]->director;
-                $arr_Usuario = $objUsuario->buscarUsuarioById($id_director);
+                $arr_Usuario = $objUsuario->obtenerUsuarioPorId($id_director);
                 $arr_Periodos[$i]->nombre_director = $arr_Usuario->apellidos_nombres;
                 $id_periodo = $arr_Periodos[$i]->id;
             }

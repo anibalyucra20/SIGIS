@@ -1,664 +1,846 @@
-function numero_pagina(pagina) {
-    document.getElementById('pagina').value = pagina;
-    listar_docentesOrdenados();
-}
-async function listar_docentesOrdenados() {
-    try {
-        mostrarPopupCarga();
-        // para filtro
-        let pagina = document.getElementById('pagina').value;
-        let cantidad_mostrar = document.getElementById('cantidad_mostrar').value;
-        let busqueda_tabla_dni = document.getElementById('busqueda_tabla_dni').value;
-        let busqueda_tabla_nomap = document.getElementById('busqueda_tabla_nomap').value;
-        let busqueda_tabla_pe = document.getElementById('busqueda_tabla_pe').value;
-        let busqueda_tabla_estado = document.getElementById('busqueda_tabla_estado').value;
-        let busqueda_tabla_sede = document.getElementById('busqueda_tabla_sede').value;
-        // asignamos valores para guardar
-        document.getElementById('filtro_dni').value = busqueda_tabla_dni;
-        document.getElementById('filtro_nomap').value = busqueda_tabla_nomap;
-        document.getElementById('pe_actual_filtro').value = busqueda_tabla_pe;
-        document.getElementById('filtro_estado').value = busqueda_tabla_estado;
-        document.getElementById('sede_actual_filtro').value = busqueda_tabla_sede;
 
-        // generamos el formulario
-        const formData = new FormData();
-        formData.append('pagina', pagina);
-        formData.append('cantidad_mostrar', cantidad_mostrar);
-        formData.append('busqueda_tabla_dni', busqueda_tabla_dni);
-        formData.append('busqueda_tabla_nomap', busqueda_tabla_nomap);
-        formData.append('busqueda_tabla_pe', busqueda_tabla_pe);
-        formData.append('busqueda_tabla_estado', busqueda_tabla_estado);
-        formData.append('busqueda_tabla_sede', busqueda_tabla_sede);
-        formData.append('sesion', session_session);
-        formData.append('token', token_token);
-        //enviar datos hacia el controlador
-        let respuesta = await fetch(base_url_server + 'src/control/Usuario.php?tipo=listar_docentes_ordenados_tabla', {
-            method: 'POST',
-            mode: 'cors',
-            cache: 'no-cache',
-            body: formData
-        });
-
-        let json = await respuesta.json();
-        document.getElementById('tablas').innerHTML = `<table id="" class="table dt-responsive" width="100%">
-                    <thead>
-                        <tr>
-                            <th>Nro</th>
-                            <th>DNI</th>
-                            <th>Apellidos y Nombres</th>
-                            <th>Género</th>
-                            <th>Sede</th>
-                            <th>Programa de Estudio</th>
-                            <th>Cargo</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="contenido_tabla">
-                    </tbody>
-                </table>`;
-        document.querySelector('#modals_editar').innerHTML = ``;
-        document.querySelector('#modals_permisos').innerHTML = ``;
-        if (json.status) {
-            let datos = json.contenido;
-            datos.forEach(item => {
-                generarfilastabla(item, json.sedes, json.programas, json.sistemas, json.roles);
-            });
-        } else if (json.msg == "Error_Sesion") {
-            alerta_sesion();
-        } else {
-            document.getElementById('tablas').innerHTML = `no se encontraron resultados`;
-        }
-        let paginacion = generar_paginacion(json.total, cantidad_mostrar);
-        let texto_paginacion = generar_texto_paginacion(json.total, cantidad_mostrar);
-        document.getElementById('texto_paginacion_tabla').innerHTML = texto_paginacion;
-        document.getElementById('lista_paginacion_tabla').innerHTML = paginacion;
-        //cargar datos a filtro
-        cargar_programa_estudio_filtro(json.programas);
-        cargar_sede_filtro(json.sedes);
-        //console.log(respuesta);
-    } catch (e) {
-        console.log("Error al cargar categorias" + e);
-    } finally {
-        ocultarPopupCarga();
-    }
-}
+/**
+ * Ejecuta al cargar la vista.
+ * Trae los datos necesarios para llenar los <select> del formulario:
+ *   - Roles (IDs 1 a 6)
+ *   - Sedes
+ *   - Programas de Estudio
+ */
 async function datos_form() {
     try {
         mostrarPopupCarga();
+
+        // Preparo FormData solo con sesión y token (si lo requieres)
         const formData = new FormData();
         formData.append('sesion', session_session);
         formData.append('token', token_token);
-        let respuesta = await fetch(base_url_server + 'src/control/Usuario.php?tipo=datos_registro', {
-            method: 'POST',
-            mode: 'cors',
-            cache: 'no-cache',
-            body: formData
-        });
+
+        let respuesta = await fetch(
+            base_url_server + 'src/control/Usuario.php?tipo=datos_registro',
+            {
+                method: 'POST',
+                mode: 'cors',
+                cache: 'no-cache',
+                body: formData
+            }
+        );
         let json = await respuesta.json();
-        if (json.status) {
-            listar_sedes(json.sedes);
-            listar_programa_estudio(json.programas);
-            listar_roles(json.roles);
-        } else {
-            alerta_sesion();
+
+        if (!json.status) {
+            if (json.msg === 'Error_Sesion') {
+                alerta_sesion();
+            }
+            return;
         }
-        //console.log(respuesta);
+
+        // json.contenido.roles = [{id, nombre}, ...]
+        // json.contenido.sedes = [{id, nombre}, ...]
+        // json.contenido.programas = [{id, nombre}, ...]
+        // (si quisieras periodos: json.contenido.periodos)
+
+        // 1) Cargar Sedes
+        let selSede = document.getElementById('id_sede');
+        selSede.innerHTML = '<option value="">Seleccione</option>';
+        json.contenido.sedes.forEach(s => {
+            selSede.innerHTML += `<option value="${s.id}">${s.nombre}</option>`;
+        });
+
+        // 2) Cargar Roles (solo IDs permitidos: 1 a 6)
+        let selRol = document.getElementById('id_rol');
+        selRol.innerHTML = '<option value="">Seleccione</option>';
+        const rolesPermitidos = new Set(['1', '2', '3', '4', '5', '6']);
+        json.contenido.roles.forEach(r => {
+            if (rolesPermitidos.has(r.id)) {
+                selRol.innerHTML += `<option value="${r.id}">${r.nombre}</option>`;
+            }
+        });
+
+        // 3) Cargar Programas de Estudio
+        let selProg = document.getElementById('id_programa_estudios');
+        selProg.innerHTML = '<option value="">Seleccione</option>';
+        json.contenido.programas.forEach(pr => {
+            selProg.innerHTML += `<option value="${pr.id}">${pr.nombre}</option>`;
+        });
+
+        // (Si necesitas Períodos, agregas algo como:)
+        // let selPeriodo = document.getElementById('id_periodo_registro');
+        // selPeriodo.innerHTML = '<option value="">Seleccione</option>';
+        // json.contenido.periodos.forEach(p => {
+        //     selPeriodo.innerHTML += `<option value="${p.id}">${p.nombre}</option>`;
+        // });
+
     } catch (e) {
-        console.log("Error al cargar datos" + e);
+        console.log('Error en datos_form():', e);
     } finally {
         ocultarPopupCarga();
     }
 }
-function generarfilastabla(item, sedes, programas, sistemas, roles) {
-    let cont = 1;
-    $(".filas_tabla").each(function () {
-        cont++;
-    })
-    let nueva_fila = document.createElement("tr");
-    nueva_fila.id = "fila" + item.id;
-    nueva_fila.className = "filas_tabla";
 
-    activo_si = "";
-    activo_no = "";
-    if (item.estado == 1) {
-        estado = "ACTIVO";
-        activo_si = "selected";
-    } else {
-        estado = "INACTIVO";
-        activo_no = "selected";
-    }
-    discapacidad_si = "";
-    discapacidad_no = "";
-    if (item.discapacidad == "SI") {
-        discapacidad_si = "selected";
-    } else {
-        discapacidad_no = "selected";
-    }
-
-    genero_m = "";
-    genero_f = "";
-    if (item.genero == "M") {
-        genero_m = "selected";
-    } else {
-        genero_f = "selected";
-    }
-
-
-    contenido_sistemas = ``;
-    //console.log(sistemas);
-
-    sistemas.forEach(element => {
-        valor_si = "";
-        valor_no = "";
-        id_rol = 0;
-        if (item.permisos[element.id]) {
-            valor_si = "selected";
-            id_rol = item.permisos[element.id].id_rol;
-        } else {
-            valor_no = "selected";
-        }
-        lista_roles_permiso = `<option value="0">Seleccione</option>`;
-        roles.forEach(roles => {
-            rol_selected = "";
-            if (roles.id == id_rol) {
-                rol_selected = "selected";
-            }
-            lista_roles_permiso += `<option value="${roles.id}" ${rol_selected}>${roles.nombre}</option>`;
-        })
-        lista_sedes = `<option value="">Seleccione</option>`;
-        sedes.forEach(sede => {
-            sede_selected = "";
-            if (sede.id == item.id_sede) {
-                sede_selected = "selected";
-            }
-            lista_sedes += `<option value="${sede.id}" ${sede_selected}>${sede.nombre}</option>`;
-        })
-        lista_pe = `<option value="">Seleccione</option>`;
-        programas.forEach(programa => {
-            pe_selected = "";
-            if (programa.id == item.id_programa_estudios) {
-                pe_selected = "selected";
-            }
-            lista_pe += `<option value="${programa.id}" ${pe_selected}>${programa.nombre}</option>`;
-        })
-
-        lista_roles = `<option value="">Seleccione</option>`;
-        roles.forEach(rol => {
-            rol_selected = "";
-            if (rol.id == item.id_rol) {
-                rol_selected = "selected";
-            }
-            lista_roles += `<option value="${rol.id}" ${rol_selected}>${rol.nombre}</option>`;
-        })
-
-
-        contenido_sistemas += `<div class="form-group row mb-2">
-                                                        <div class="form-group row mb-2 col-5">
-                                                            <label for="${element.codigo}${item.id}" class="col-8 col-form-label">${element.nombre}</label>
-                                                            <div class="col-4">
-                                                                <select name="${element.codigo}${item.id}" id="${element.codigo}${item.id}" class="form-control">
-                                                                    <option value="1" `+ valor_si + `>SI</option>
-                                                                    <option value="0" `+ valor_no + `>NO</option>
-                                                                </select>
-                                                            </div>
-                                                        </div>
-                                                        <div class="form-group row mb-2 col-5">
-                                                            <label for="rol${element.codigo}${item.id}" class="col-3 col-form-label">ROL</label>
-                                                            <div class="col-9">
-                                                                <select name="rol${element.codigo}${item.id}" id="rol${element.codigo}${item.id}" class="form-control">
-                                                                ${lista_roles_permiso}
-                                                                </select>
-                                                            </div>
-                                                        </div>
-                                                    </div>`;
-    });
-
-    nueva_fila.innerHTML = `
-                            <th>${cont}</th>
-                            <td>${item.dni}</td>
-                            <td>${item.apellidos_nombres}</td>
-                            <td>${item.genero}</td>
-                            <td>${item.sede}</td>
-                            <td>${item.programa_estudios}</td>
-                            <td>${item.rol}</td>
-                            <td>${estado}</td>
-                            <td>${item.options}</td>
-                `;
-    document.querySelector('#modals_editar').innerHTML += `<div class="modal fade modal_editar${item.id}" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
-                                <div class="modal-dialog modal-lg">
-                                    <div class="modal-content">
-                                        <div class="modal-header text-center">
-                                            <h5 class="modal-title h4 " id="myLargeModalLabel">Actualizar datos de docente</h5>
-                                            <button type="button" class="close waves-effect waves-light" data-dismiss="modal" aria-label="Close">
-                                                <span aria-hidden="true">&times;</span>
-                                            </button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <div class="col-12">
-                                                <form class="form-horizontal" id="frmActualizar${item.id}">
-                                                    <div class="form-group row mb-2">
-                                                        <label for="dni${item.id}" class="col-3 col-form-label">DNI</label>
-                                                        <div class="col-9">
-                                                            <input type="text" class="form-control" id="dni${item.id}" name="dni" value="${item.dni}">
-                                                        </div>
-                                                    </div>
-                                                    <div class="form-group row mb-2">
-                                                        <label for="apellidos_nombres${item.id}" class="col-3 col-form-label">Apellidos y Nombres</label>
-                                                        <div class="col-9">
-                                                            <input type="text" class="form-control" id="apellidos_nombres${item.id}" name="apellidos_nombres"  value="${item.apellidos_nombres}">
-                                                        </div>
-                                                    </div>
-                                                    <div class="form-group row mb-2">
-                                                        <label for="genero${item.id}" class="col-3 col-form-label">Género</label>
-                                                        <div class="col-9">
-                                                            <select name="genero" id="genero${item.id}" class="form-control">
-                                                                <option value=""></option>
-                                                                <option value="M" `+ genero_m + `>M</option>
-                                                                <option value="F" `+ genero_f + `>F</option>
-                                                            </select>
-                                                        </div>
-                                                    </div>
-                                                    <div class="form-group row mb-2">
-                                                        <label for="fecha_nac${item.id}" class="col-3 col-form-label">Fecha de Nacimiento</label>
-                                                        <div class="col-9">
-                                                            <input type="date" class="form-control" id="fecha_nac${item.id}" name="fecha_nac" value="${item.fecha_nac}">
-                                                        </div>
-                                                    </div>
-                                                    <div class="form-group row mb-2">
-                                                        <label for="direccion${item.id}" class="col-3 col-form-label">Dirección </label>
-                                                        <div class="col-9">
-                                                            <input type="text" class="form-control" id="direccion${item.id}" name="direccion"  value="${item.direccion}">
-                                                        </div>
-                                                    </div>
-                                                    <div class="form-group row mb-2">
-                                                        <label for="correo${item.id}" class="col-3 col-form-label">Correo Electrónico</label>
-                                                        <div class="col-9">
-                                                            <input type="email" class="form-control" id="correo${item.id}" name="correo"  value="${item.correo}">
-                                                        </div>
-                                                    </div>
-                                                    <div class="form-group row mb-2">
-                                                        <label for="telefono${item.id}" class="col-3 col-form-label">Teléfono </label>
-                                                        <div class="col-9">
-                                                            <input type="text" class="form-control" id="telefono${item.id}" name="telefono"  value="${item.telefono}">
-                                                        </div>
-                                                    </div>
-                                                    <div class="form-group row mb-2">
-                                                        <label for="discapacidad${item.id}" class="col-3 col-form-label">Discapacidad </label>
-                                                        <div class="col-9">
-                                                            <select name="discapacidad" id="discapacidad${item.id}" class="form-control" value="${item.discapacidad}" >
-                                                                <option value=""></option>
-                                                                <option value="NO" `+ discapacidad_no + `>NO</option>
-                                                                <option value="SI" `+ discapacidad_si + `>SI</option>
-                                                            </select>
-                                                        </div>
-                                                    </div>
-                                                    <div class="form-group row mb-2">
-                                                        <label for="id_sede${item.id}" class="col-3 col-form-label">Sede </label>
-                                                        <div class="col-9">
-                                                            <select name="id_sede" id="id_sede${item.id}" class="form-control">
-                                                            ${lista_sedes}
-                                                            </select>
-                                                        </div>
-                                                    </div>
-                                                    <div class="form-group row mb-2">
-                                                        <label for="id_rol${item.id}" class="col-3 col-form-label">Cargo </label>
-                                                        <div class="col-9">
-                                                            <select name="id_rol" id="id_rol${item.id}" class="form-control">
-                                                             ${lista_roles}
-                                                            </select>
-                                                        </div>
-                                                    </div>
-                                                    <div class="form-group row mb-2">
-                                                        <label for="id_programa_estudios${item.id}" class="col-3 col-form-label">Programa de Estudio </label>
-                                                        <div class="col-9">
-                                                            <select name="id_programa_estudios" id="id_programa_estudios${item.id}" class="form-control">
-                                                            ${lista_pe}
-                                                            </select>
-                                                        </div>
-                                                    </div>
-                                                    <div class="form-group row mb-2">
-                                                        <label for="estado${item.id}" class="col-3 col-form-label">ESTADO </label>
-                                                        <div class="col-9">
-                                                            <select name="estado" id="estado${item.id}" class="form-control">
-                                                                <option value=""></option>
-                                                                <option value="1" `+ activo_si + `>ACTIVO</option>
-                                                                <option value="0" `+ activo_no + `>INACTIVO</option>
-                                                            </select>
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="form-group mb-0 justify-content-end row text-center">
-                                                        <div class="col-12">
-                                                            <button type="button" class="btn btn-light waves-effect waves-light" data-dismiss="modal">Cancelar</button>
-                                                            <button type="button" class="btn btn-success waves-effect waves-light" onclick="actualizarUsuario(${item.id})">Actualizar</button>
-                                                        </div>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>`;
-    document.querySelector('#modals_permisos').innerHTML += `<div class="modal fade modal_permisos${item.id}" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
-                                <div class="modal-dialog modal-lg">
-                                    <div class="modal-content">
-                                        <div class="modal-header text-center">
-                                            <h5 class="modal-title h4 " id="myLargeModalLabel">Permisos de Usuario</h5>
-                                            <button type="button" class="close waves-effect waves-light" data-dismiss="modal" aria-label="Close">
-                                                <span aria-hidden="true">&times;</span>
-                                            </button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <div class="col-12">
-                                                <form class="form-horizontal" id="frm_permisos_${item.id}">
-                                                    <div class="form-group row mb-2">
-                                                        <label for="dni${item.id}" class="col-3 col-form-label">DNI</label>
-                                                        <div class="col-9">
-                                                            <input type="text" class="form-control" id="dni${item.id}" disabled value="${item.dni}">
-                                                        </div>
-                                                    </div>
-                                                    <div class="form-group row mb-2">
-                                                        <label for="apellidosnombres${item.id}" class="col-3 col-form-label">Apellidos y Nombres</label>
-                                                        <div class="col-9">
-                                                            <input type="text" class="form-control" id="apellidosnombres${item.id}" disabled value="${item.apellidos_nombres}">
-                                                        </div>
-                                                    </div>
-                                                    <div class="form-group row mb-2">
-                                                        <label class="col-3 col-form-label">Sistemas :</label>
-                                                        <div class="col-9">
-                                                        </div>
-                                                    </div>
-                                                    <div id="permisos${item.id}">
-                                                    ${contenido_sistemas}
-                                                    </div>
-                                                    
-                                                    
-                                                    <br>
-                                                    <div class="form-group mb-0 justify-content-end row text-center">
-                                                        <div class="col-12">
-                                                            <button type="button" class="btn btn-light waves-effect waves-light" data-dismiss="modal">Cancelar</button>
-                                                            <button type="button" class="btn btn-success waves-effect waves-light" onclick="actualizar_permisos(${item.id});">Actualizar</button>
-                                                        </div>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>`;
-    document.querySelector('#contenido_tabla').appendChild(nueva_fila);
-
-}
-
-async function listar_sedes(datos) {
-    try {
-        let contenido_select = '<option value="">Seleccione</option>';
-        if (Array.isArray(datos)) {
-            datos.forEach(element => {
-                let selected = "";
-                contenido_select += '<option value="' + element.id + '" ' + selected + '>' + element.nombre + '</option>';
-            });
-            document.getElementById('id_sede').innerHTML = contenido_select;
-        }
-    } catch (error) {
-        console.log("ocurrio un error al listar sedes " + error);
-    }
-
-}
-
-async function listar_programa_estudio(datos) {
-    let contenido_select = '<option value="">Seleccione</option>';
-    if (Array.isArray(datos)) {
-        datos.forEach(element => {
-            let selected = "";
-            contenido_select += '<option value="' + element.id + '" ' + selected + '>' + element.nombre + '</option>';
-        });
-        document.getElementById('id_programa_estudios').innerHTML = contenido_select;
-    }
-}
-
-async function listar_roles(datos) {
-    let contenido_select = '<option value="">Seleccione</option>';
-    if (Array.isArray(datos)) {
-        datos.forEach(element => {
-            let selected = "";
-            contenido_select += '<option value="' + element.id + '" ' + selected + '>' + element.nombre + '</option>';
-        });
-        document.getElementById('id_rol').innerHTML = contenido_select;
-    }
-}
-
+/**
+ * Toma los valores del formulario, valida que no estén vacíos
+ * y envía el FormData a Usuario.php?tipo=registrar_docente
+ */
 async function registrar_docente() {
-    let dni = document.getElementById('dni').value;
-    let apellidos_nombres = document.querySelector('#apellidos_nombres').value;
-    let genero = document.querySelector('#genero').value;
-    let fecha_nac = document.querySelector('#fecha_nac').value;
-    let direccion = document.querySelector('#direccion').value;
-    let correo = document.querySelector('#correo').value;
-    let telefono = document.querySelector('#telefono').value;
-    let discapacidad = document.querySelector('#discapacidad').value;
-    let id_sede = document.querySelector('#id_sede').value;
-    let id_rol = document.querySelector('#id_rol').value;
-    let id_programa_estudios = document.querySelector('#id_programa_estudios').value;
-    if (dni == "" || apellidos_nombres == "" || genero == "" || fecha_nac == "" || direccion == "" || correo == "" || telefono == "" || discapacidad == "" || id_sede == "" || id_rol == "" || id_programa_estudios == "") {
-        Swal.fire({
-            type: 'error',
-            title: 'Error',
-            text: 'Campos vacíos...',
-            confirmButtonClass: 'btn btn-confirm mt-2',
-            footer: ''
-        })
+    // Leer cada campo
+    const dni                  = document.getElementById('dni').value.trim();
+    const apellidos_nombres    = document.getElementById('apellidos_nombres').value.trim();
+    const genero               = document.getElementById('genero').value;
+    const fecha_nac            = document.getElementById('fecha_nac').value;
+    const direccion            = document.getElementById('direccion').value.trim();
+    const correo               = document.getElementById('correo').value.trim();
+    const telefono             = document.getElementById('telefono').value.trim();
+    const discapacidad         = document.getElementById('discapacidad').value;
+    const id_sede              = document.getElementById('id_sede').value;
+    const id_rol               = document.getElementById('id_rol').value;
+    const id_periodo_registro  = document.getElementById('id_periodo_actual_menu').value;
+    const id_programa_estudios = document.getElementById('id_programa_estudios').value;
+
+    // Validaciones según la tabla sigi_usuarios
+    if (!validarCampos({
+        dni,
+        apellidos_nombres,
+        genero,
+        fecha_nac,
+        direccion,
+        correo,
+        telefono,
+        discapacidad,
+        id_sede,
+        id_rol,
+        id_periodo_registro,
+        id_programa_estudios
+    })) {
         return;
     }
+
     try {
-        // capturamos datos del formulario html
-        const datos = new FormData(frmRegistrar);
+        mostrarPopupCarga();
+
+        const datos = new FormData();
+        datos.append('dni', dni);
+        datos.append('apellidos_nombres', apellidos_nombres);
+        datos.append('genero', genero);
+        datos.append('fecha_nac', fecha_nac);
+        datos.append('direccion', direccion);
+        datos.append('correo', correo);
+        datos.append('telefono', telefono);
+        datos.append('discapacidad', discapacidad);
+        datos.append('id_sede', id_sede);
+        datos.append('id_rol', id_rol);
+        datos.append('id_periodo_registro', id_periodo_registro);
+        datos.append('id_programa_estudios', id_programa_estudios);
+
         datos.append('sesion', session_session);
         datos.append('token', token_token);
-        //enviar datos hacia el controlador
-        let respuesta = await fetch(base_url_server + 'src/control/Usuario.php?tipo=registrar', {
-            method: 'POST',
-            mode: 'cors',
-            cache: 'no-cache',
-            body: datos
-        });
-        json = await respuesta.json();
+
+        let respuesta = await fetch(
+            base_url_server + 'src/control/Usuario.php?tipo=registrar_docente',
+            {
+                method: 'POST',
+                mode: 'cors',
+                cache: 'no-cache',
+                body: datos
+            }
+        );
+        let json = await respuesta.json();
+
         if (json.status) {
-            document.getElementById("frmRegistrar").reset();
+            document.getElementById('frmRegistrar').reset();
             Swal.fire({
                 type: 'success',
-                title: 'Registro',
-                text: json.mensaje,
+                title: 'Registro Exitoso',
+                text: json.msg,
                 confirmButtonClass: 'btn btn-confirm mt-2',
-                footer: '',
                 timer: 1000
             });
-
-        } else if (json.msg == "Error_Sesion") {
+        } else if (json.msg === 'Error_Sesion') {
             alerta_sesion();
         } else {
             Swal.fire({
                 type: 'error',
                 title: 'Error',
-                text: json.mensaje,
-                confirmButtonClass: 'btn btn-confirm mt-2',
-                footer: '',
-                timer: 1000
-            })
+                text: json.msg || 'No se pudo registrar.',
+                confirmButtonClass: 'btn btn-confirm mt-2'
+            });
         }
-        //console.log(json);
     } catch (e) {
-        console.log("Oops, ocurrio un error " + e);
+        console.log('Error en registrar_docente():', e);
+    } finally {
+        ocultarPopupCarga();
     }
 }
 
-async function actualizarUsuario(id) {
-    let dni = document.getElementById('dni' + id).value;
-    let apellidos_nombres = document.querySelector('#apellidos_nombres' + id).value;
-    let genero = document.querySelector('#genero' + id).value;
-    let fecha_nac = document.querySelector('#fecha_nac' + id).value;
-    let direccion = document.querySelector('#direccion' + id).value;
-    let correo = document.querySelector('#correo' + id).value;
-    let telefono = document.querySelector('#telefono' + id).value;
-    let discapacidad = document.querySelector('#discapacidad' + id).value;
-    let id_sede = document.querySelector('#id_sede' + id).value;
-    let id_rol = document.querySelector('#id_rol' + id).value;
-    let id_programa_estudios = document.querySelector('#id_programa_estudios' + id).value;
-    let estado = document.querySelector('#estado' + id).value;
-    if (dni == "" || apellidos_nombres == "" || genero == "" || fecha_nac == "" || direccion == "" || correo == "" || telefono == "" || discapacidad == "" || id_sede == "" || id_rol == "" || id_programa_estudios == "" || estado == "") {
+/**
+ * Valida cada campo según la definición de sigi_usuarios:
+ *  - dni: no vacío, max 20 caracteres.
+ *  - apellidos_nombres: no vacío, max 125 caracteres.
+ *  - genero: 'M' o 'F'.
+ *  - fecha_nac: no vacío, formato válido.
+ *  - direccion: no vacío, max 200 caracteres.
+ *  - correo: no vacío, max 100 caracteres, formato email válido.
+ *  - telefono: no vacío, max 15 caracteres, solo dígitos, espacios o guiones.
+ *  - discapacidad: 'SI' o 'NO'.
+ *  - id_sede: seleccionado (no vacío).
+ *  - id_rol: seleccionado y dentro de [1..6].
+ *  - id_periodo_registro: seleccionado (no vacío).
+ *  - id_programa_estudios: seleccionado (no vacío).
+ */
+function validarCampos(fields) {
+    const {
+        dni,
+        apellidos_nombres,
+        genero,
+        fecha_nac,
+        direccion,
+        correo,
+        telefono,
+        discapacidad,
+        id_sede,
+        id_rol,
+        id_periodo_registro,
+        id_programa_estudios
+    } = fields;
+
+    if (dni === '' || dni.length > 20) {
         Swal.fire({
             type: 'error',
             title: 'Error',
-            text: 'Campos vacíos...',
-            confirmButtonClass: 'btn btn-confirm mt-2',
-            footer: '',
-            timer: 1000
-        })
-        return;
-    }
-
-    const formulario = document.getElementById('frmActualizar' + id);
-    const datos = new FormData(formulario);
-    datos.append('data', id);
-    datos.append('sesion', session_session);
-    datos.append('token', token_token);
-    try {
-        let respuesta = await fetch(base_url_server + 'src/control/Usuario.php?tipo=actualizar', {
-            method: 'POST',
-            mode: 'cors',
-            cache: 'no-cache',
-            body: datos
+            text: 'El DNI es obligatorio y no debe exceder 20 caracteres.',
+            confirmButtonClass: 'btn btn-confirm mt-2'
         });
-        json = await respuesta.json();
+        return false;
+    }
+    if (apellidos_nombres === '' || apellidos_nombres.length > 125) {
+        Swal.fire({
+            type: 'error',
+            title: 'Error',
+            text: 'Los apellidos y nombres son obligatorios y no deben exceder 125 caracteres.',
+            confirmButtonClass: 'btn btn-confirm mt-2'
+        });
+        return false;
+    }
+    if (!['M', 'F'].includes(genero)) {
+        Swal.fire({
+            type: 'error',
+            title: 'Error',
+            text: 'Seleccione un género válido.',
+            confirmButtonClass: 'btn btn-confirm mt-2'
+        });
+        return false;
+    }
+    if (fecha_nac === '') {
+        Swal.fire({
+            type: 'error',
+            title: 'Error',
+            text: 'La fecha de nacimiento es obligatoria.',
+            confirmButtonClass: 'btn btn-confirm mt-2'
+        });
+        return false;
+    }
+    if (direccion === '' || direccion.length > 200) {
+        Swal.fire({
+            type: 'error',
+            title: 'Error',
+            text: 'La dirección es obligatoria y no debe exceder 200 caracteres.',
+            confirmButtonClass: 'btn btn-confirm mt-2'
+        });
+        return false;
+    }
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (correo === '' || correo.length > 100 || !emailPattern.test(correo)) {
+        Swal.fire({
+            type: 'error',
+            title: 'Error',
+            text: 'El correo es obligatorio, no debe exceder 100 caracteres y debe ser válido.',
+            confirmButtonClass: 'btn btn-confirm mt-2'
+        });
+        return false;
+    }
+    if (telefono === '' || telefono.length > 15 || !/^[\d\s-]+$/.test(telefono)) {
+        Swal.fire({
+            type: 'error',
+            title: 'Error',
+            text: 'El teléfono es obligatorio, no debe exceder 15 caracteres y solo puede contener dígitos, espacios o guiones.',
+            confirmButtonClass: 'btn btn-confirm mt-2'
+        });
+        return false;
+    }
+    if (!['SI', 'NO'].includes(discapacidad)) {
+        Swal.fire({
+            type: 'error',
+            title: 'Error',
+            text: 'Seleccione una opción válida para discapacidad ("SI" o "NO").',
+            confirmButtonClass: 'btn btn-confirm mt-2'
+        });
+        return false;
+    }
+    if (id_sede === '') {
+        Swal.fire({
+            type: 'error',
+            title: 'Error',
+            text: 'Seleccione una sede.',
+            confirmButtonClass: 'btn btn-confirm mt-2'
+        });
+        return false;
+    }
+    const rolesPermitidos = new Set(["1", "2", "3", "4", "5", "6"]);
+    if (!rolesPermitidos.has(id_rol.toString())) {
+        Swal.fire({
+            type: 'error',
+            title: 'Error',
+            text: 'Seleccione un rol válido (Administrador o Docente).',
+            confirmButtonClass: 'btn btn-confirm mt-2'
+        });
+        return false;
+    }
+    if (id_periodo_registro === '') {
+        Swal.fire({
+            type: 'error',
+            title: 'Error',
+            text: 'Seleccione un período académico.',
+            confirmButtonClass: 'btn btn-confirm mt-2'
+        });
+        return false;
+    }
+    if (id_programa_estudios === '') {
+        Swal.fire({
+            type: 'error',
+            title: 'Error',
+            text: 'Seleccione un programa de estudio.',
+            confirmButtonClass: 'btn btn-confirm mt-2'
+        });
+        return false;
+    }
+    return true;
+}
+
+// src/view/js/functions_usuario.js
+
+/**
+ * Dependencias (en main.js):
+ *   - cargarFiltros(): carga <select> de programas y sedes.
+ *   - generarPaginacion(total, porPagina): genera HTML de paginación.
+ *   - generarTextoPaginacion(total, porPagina, paginaActual): retorna texto descriptivo.
+ */
+
+document.addEventListener('DOMContentLoaded', function () {
+    // Carga los <select> de Filtros (programas, sedes)
+    cargarFiltros();
+    // Muestra la primera página
+    numero_pagina(1);
+});
+
+/**
+ * Cambia la página actual y luego llama a listar_docentesOrdenados().
+ * @param {number} pagina
+ */
+function numero_pagina(pagina) {
+    // Leer valores de filtros visibles
+    const dniFiltro       = document.getElementById('busqueda_tabla_dni').value.trim();
+    const nomapFiltro     = document.getElementById('busqueda_tabla_nomap').value.trim();
+    const peFiltro        = document.getElementById('busqueda_tabla_pe').value;
+    const estadoFiltro    = document.getElementById('busqueda_tabla_estado').value;
+    const sedeFiltro      = document.getElementById('busqueda_tabla_sede').value;
+
+    // Actualizar inputs ocultos
+    document.getElementById('filtro_dni').value    = dniFiltro;
+    document.getElementById('filtro_nomap').value  = nomapFiltro;
+    document.getElementById('filtro_pe').value     = peFiltro;
+    document.getElementById('filtro_estado').value = estadoFiltro;
+    document.getElementById('filtro_sede').value   = sedeFiltro;
+
+    // Fijar número de página
+    document.getElementById('pagina').value = pagina;
+
+    // Listar con los nuevos valores
+    listar_docentesOrdenados();
+}
+
+/**
+ * Envía la petición al backend para obtener la lista de usuarios según filtros y paginación.
+ * Renderiza la tabla de resultados y la paginación.
+ */
+async function listar_docentesOrdenados() {
+    try {
+        mostrarPopupCarga();
+
+        // Parámetros de paginación y filtros
+        const pagina           = parseInt(document.getElementById('pagina').value, 10);
+        const cantidad         = parseInt(document.getElementById('cantidad_mostrar').value, 10);
+        const filtro_dni       = document.getElementById('filtro_dni').value;
+        const filtro_nomap     = document.getElementById('filtro_nomap').value;
+        const filtro_pe        = document.getElementById('filtro_pe').value;
+        const filtro_estado    = document.getElementById('filtro_estado').value;
+        const filtro_sede      = document.getElementById('filtro_sede').value;
+
+        // Armar FormData
+        const formData = new FormData();
+        formData.append('pagina', pagina);
+        formData.append('cantidad_mostrar', cantidad);
+        formData.append('filtro_dni', filtro_dni);
+        formData.append('filtro_nomap', filtro_nomap);
+        formData.append('filtro_pe', filtro_pe);
+        formData.append('filtro_estado', filtro_estado);
+        formData.append('filtro_sede', filtro_sede);
+        formData.append('sesion', session_session);
+        formData.append('token', token_token);
+
+        // Petición
+        let respuesta = await fetch(
+            base_url_server + 'src/control/Usuario.php?tipo=listar_tabla_docentes',
+            {
+                method: 'POST',
+                mode: 'cors',
+                cache: 'no-cache',
+                body: formData
+            }
+        );
+        let json = await respuesta.json();
+
+        const contenedor = document.getElementById('tablas');
+        contenedor.innerHTML = '';
+
+        if (!json.status) {
+            if (json.msg === 'Error_Sesion') {
+                alerta_sesion();
+            } else {
+                contenedor.innerHTML = `<p>No se encontraron resultados.</p>`;
+            }
+            return;
+        }
+
+        // Construir tabla
+        let tablaHTML = `
+            <table class="table table-striped table-bordered" width="100%">
+                <thead>
+                    <tr>
+                        <th>Nro</th>
+                        <th>DNI</th>
+                        <th>Apellidos y Nombres</th>
+                        <th>Género</th>
+                        <th>F. Nac.</th>
+                        <th>Dirección</th>
+                        <th>Correo</th>
+                        <th>Teléfono</th>
+                        <th>Discapacidad</th>
+                        <th>Programa</th>
+                        <th>Período</th>
+                        <th>Rol</th>
+                        <th>Sede</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="contenido_tabla">
+                </tbody>
+            </table>
+        `;
+        contenedor.innerHTML = tablaHTML;
+        document.getElementById('modals_editar').innerHTML = '';
+        document.getElementById('modals_permisos').innerHTML = '';
+
+        const cuerpo = document.getElementById('contenido_tabla');
+        let contador = (pagina - 1) * cantidad + 1;
+
+        json.contenido.forEach(u => {
+            const estadoTexto = (u.estado == 1) ? 'Activo' : 'Inactivo';
+            const fila = document.createElement('tr');
+
+            fila.innerHTML = `
+                <td>${contador++}</td>
+                <td>${u.dni}</td>
+                <td>${u.apellidos_nombres}</td>
+                <td>${u.genero}</td>
+                <td>${u.fecha_nac}</td>
+                <td>${u.direccion}</td>
+                <td>${u.correo}</td>
+                <td>${u.telefono}</td>
+                <td>${u.discapacidad}</td>
+                <td>${u.programa_nombre}</td>
+                <td>${u.periodo_nombre}</td>
+                <td>${u.rol_nombre}</td>
+                <td>${u.sede_nombre}</td>
+                <td>${estadoTexto}</td>
+                <td>
+                    <button class="btn btn-success btn-sm" data-toggle="modal" data-target=".modal_editar${u.id}">
+                        <i class="fa fa-edit"></i>
+                    </button>
+                </td>
+            `;
+
+            // Construir modal de edición
+            const modal = document.createElement('div');
+            modal.className = `modal fade modal_editar${u.id}`;
+            modal.tabIndex = -1;
+            modal.role = 'dialog';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Editar Usuario</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <form class="form-horizontal" id="frmEditar${u.id}">
+                                <input type="hidden" name="id" value="${u.id}">
+
+                                <div class="form-group row mb-2">
+                                    <label class="col-3 col-form-label">DNI</label>
+                                    <div class="col-9">
+                                        <input type="text" class="form-control" name="dni" value="${u.dni}" maxlength="20">
+                                    </div>
+                                </div>
+                                <div class="form-group row mb-2">
+                                    <label class="col-3 col-form-label">Apellidos y Nombres</label>
+                                    <div class="col-9">
+                                        <input type="text" class="form-control" name="apellidos_nombres" value="${u.apellidos_nombres}" maxlength="125">
+                                    </div>
+                                </div>
+                                <div class="form-group row mb-2">
+                                    <label class="col-3 col-form-label">Género</label>
+                                    <div class="col-9">
+                                        <select name="genero" class="form-control">
+                                            <option value="M" ${u.genero === 'M' ? 'selected' : ''}>M</option>
+                                            <option value="F" ${u.genero === 'F' ? 'selected' : ''}>F</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group row mb-2">
+                                    <label class="col-3 col-form-label">Fecha Nacimiento</label>
+                                    <div class="col-9">
+                                        <input type="date" class="form-control" name="fecha_nac" value="${u.fecha_nac}">
+                                    </div>
+                                </div>
+                                <div class="form-group row mb-2">
+                                    <label class="col-3 col-form-label">Dirección</label>
+                                    <div class="col-9">
+                                        <input type="text" class="form-control" name="direccion" value="${u.direccion}" maxlength="200">
+                                    </div>
+                                </div>
+                                <div class="form-group row mb-2">
+                                    <label class="col-3 col-form-label">Correo</label>
+                                    <div class="col-9">
+                                        <input type="email" class="form-control" name="correo" value="${u.correo}" maxlength="100">
+                                    </div>
+                                </div>
+                                <div class="form-group row mb-2">
+                                    <label class="col-3 col-form-label">Teléfono</label>
+                                    <div class="col-9">
+                                        <input type="text" class="form-control" name="telefono" value="${u.telefono}" maxlength="15">
+                                    </div>
+                                </div>
+                                <div class="form-group row mb-2">
+                                    <label class="col-3 col-form-label">Discapacidad</label>
+                                    <div class="col-9">
+                                        <select name="discapacidad" class="form-control">
+                                            <option value="NO" ${u.discapacidad === 'NO' ? 'selected' : ''}>NO</option>
+                                            <option value="SI" ${u.discapacidad === 'SI' ? 'selected' : ''}>SI</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group row mb-2">
+                                    <label class="col-3 col-form-label">Sede</label>
+                                    <div class="col-9">
+                                        <select name="id_sede" class="form-control">
+                                            <option value="">Seleccione</option>
+                                            ${json.contenido.sedes
+                                                .map(sd =>
+                                                    `<option value="${sd.id}" ${sd.id == u.id_sede ? 'selected' : ''}>${sd.nombre}</option>`
+                                                ).join('')}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group row mb-2">
+                                    <label class="col-3 col-form-label">Rol</label>
+                                    <div class="col-9">
+                                        <select name="id_rol" class="form-control">
+                                            <option value="">Seleccione</option>
+                                            ${json.contenido.roles
+                                                .filter(r => ['1','2','3','4','5','6'].includes(r.id.toString()))
+                                                .map(r =>
+                                                    `<option value="${r.id}" ${r.id == u.id_rol ? 'selected' : ''}>${r.nombre}</option>`
+                                                ).join('')}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group row mb-2">
+                                    <label class="col-3 col-form-label">Período Académico</label>
+                                    <div class="col-9">
+                                        <select name="id_periodo_registro" class="form-control">
+                                            <option value="">Seleccione</option>
+                                            ${json.contenido.periodos
+                                                .map(p =>
+                                                    `<option value="${p.id}" ${p.id == u.id_periodo_registro ? 'selected' : ''}>${p.nombre}</option>`
+                                                ).join('')}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group row mb-2">
+                                    <label class="col-3 col-form-label">Programa</label>
+                                    <div class="col-9">
+                                        <select name="id_programa_estudios" class="form-control">
+                                            <option value="">Seleccione</option>
+                                            ${json.contenido.programas
+                                                .map(pr =>
+                                                    `<option value="${pr.id}" ${pr.id == u.id_programa_estudios ? 'selected' : ''}>${pr.nombre}</option>`
+                                                ).join('')}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group row mb-2">
+                                    <label class="col-3 col-form-label">Estado</label>
+                                    <div class="col-9">
+                                        <select name="estado" class="form-control">
+                                            <option value="1" ${u.estado == 1 ? 'selected' : ''}>Activo</option>
+                                            <option value="0" ${u.estado == 0 ? 'selected' : ''}>Inactivo</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group mb-0 justify-content-end row text-center">
+                                    <div class="col-12">
+                                        <button type="button" class="btn btn-light waves-effect waves-light" data-dismiss="modal">
+                                            Cancelar
+                                        </button>
+                                        <button type="button" class="btn btn-primary waves-effect waves-light"
+                                                onclick="actualizar_docente(${u.id});">
+                                            Guardar Cambios
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            `;
+
+            cuerpo.appendChild(fila);
+            document.getElementById('modals_editar').appendChild(modal);
+        });
+
+        // Paginación (usa funciones definidas en main.js)
+        document.getElementById('lista_paginacion_tabla').innerHTML =
+            generarPaginacion(json.total, cantidad);
+        document.getElementById('texto_paginacion_tabla').innerText =
+            generarTextoPaginacion(json.total, cantidad, pagina);
+
+    } catch (e) {
+        console.log('Error en listar_docentesOrdenados():', e);
+    } finally {
+        ocultarPopupCarga();
+    }
+}
+
+/**
+ * Llama al backend para actualizar los datos del docente existente.
+ */
+async function actualizar_docente(id) {
+    const form = document.getElementById(`frmEditar${id}`);
+    const formData = new FormData(form);
+
+    // Validación mínima (igual que en registrar)
+    const fields = {
+        dni:                  formData.get('dni').trim(),
+        apellidos_nombres:    formData.get('apellidos_nombres').trim(),
+        genero:               formData.get('genero'),
+        fecha_nac:            formData.get('fecha_nac'),
+        direccion:            formData.get('direccion').trim(),
+        correo:               formData.get('correo').trim(),
+        telefono:             formData.get('telefono').trim(),
+        discapacidad:         formData.get('discapacidad'),
+        id_sede:              formData.get('id_sede'),
+        id_rol:               formData.get('id_rol'),
+        id_periodo_registro:  formData.get('id_periodo_registro'),
+        id_programa_estudios: formData.get('id_programa_estudios'),
+        estado:               formData.get('estado')
+    };
+    if (!validarCampos(fields)) return;
+
+    try {
+        mostrarPopupCarga();
+
+        formData.append('id', id);
+        formData.append('sesion', session_session);
+        formData.append('token', token_token);
+
+        let respuesta = await fetch(
+            base_url_server + 'src/control/Usuario.php?tipo=actualizar_docente',
+            {
+                method: 'POST',
+                mode: 'cors',
+                cache: 'no-cache',
+                body: formData
+            }
+        );
+        let json = await respuesta.json();
+
         if (json.status) {
-            $('.modal_editar' + id).modal('hide');
+            $(`.modal_editar${id}`).modal('hide');
             Swal.fire({
                 type: 'success',
-                title: 'Actualizar',
-                text: json.mensaje,
+                title: 'Actualizado',
+                text: json.msg || 'Cambios guardados correctamente.',
                 confirmButtonClass: 'btn btn-confirm mt-2',
-                footer: '',
                 timer: 1000
-            });
-        } else if (json.msg == "Error_Sesion") {
+            }).then(() => numero_pagina(parseInt(document.getElementById('pagina').value, 10)));
+        } else if (json.msg === 'Error_Sesion') {
             alerta_sesion();
         } else {
             Swal.fire({
                 type: 'error',
                 title: 'Error',
-                text: json.mensaje,
-                confirmButtonClass: 'btn btn-confirm mt-2',
-                footer: '',
-                timer: 1000
-            })
-        }
-        //console.log(json);
-    } catch (e) {
-        console.log("Error al actualizar periodo" + e);
-    }
-}
-//-------------------------------------------------------- RESETEAR CONTRASEÑA -------------------------------------------------------------
-function reset_password(id) {
-    Swal.fire({
-        title: "¿Estás seguro de generar nueva contraseña?",
-        text: "Se generará un nueva contraseña para este usuario",
-        type: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#3085d6",
-        cancelButtonColor: "#d33",
-        confirmButtonText: "Si",
-        cancelButtonText: 'Cancelar'
-    }).then(function (result) {
-        if (result.value) {
-            reniciar_password(id);
-        }
-    });
-}
-async function reniciar_password(id) {
-
-    // generamos el formulario
-    const formData = new FormData();
-    formData.append('id', id);
-    formData.append('sesion', session_session);
-    formData.append('token', token_token);
-    try {
-        let respuesta = await fetch(base_url_server + 'src/control/Usuario.php?tipo=reiniciar_password', {
-            method: 'POST',
-            mode: 'cors',
-            cache: 'no-cache',
-            body: formData
-        });
-        json = await respuesta.json();
-        if (json.status) {
-            Swal.fire({
-                type: 'success',
-                title: 'Actualizar',
-                text: json.mensaje,
-                confirmButtonClass: 'btn btn-confirm mt-2',
-                footer: '',
-                confirmButtonText: "Aceptar"
+                text: json.msg || 'Fallo al actualizar.',
+                confirmButtonClass: 'btn btn-confirm mt-2'
             });
-        } else if (json.msg == "Error_Sesion") {
-            alerta_sesion();
-        } else {
-            Swal.fire({
-                type: 'error',
-                title: 'Error',
-                text: json.mensaje,
-                confirmButtonClass: 'btn btn-confirm mt-2',
-                footer: '',
-                timer: 1000
-            })
         }
-        //console.log(json);
     } catch (e) {
-        console.log("Error al actualizar periodo" + e);
+        console.log('Error en actualizar_docente():', e);
+    } finally {
+        ocultarPopupCarga();
     }
-
-
 }
-// ------------------------------------------------------ FUNCIONES DE PERMISOS----------------------------------------------------------------
-async function actualizar_permisos(id) {
-    const formulario = document.getElementById('frm_permisos_' + id);
-    const datos = new FormData(formulario);
-    datos.append('data', id);
-    datos.append('sesion', session_session);
-    datos.append('token', token_token);
-    try {
-        let respuesta = await fetch(base_url_server + 'src/control/Usuario.php?tipo=actualizar_permisos', {
-            method: 'POST',
-            mode: 'cors',
-            cache: 'no-cache',
-            body: datos
+
+/**
+ * Valida cada campo según la definición de sigi_usuarios.
+ */
+function validarCampos(fields) {
+    const {
+        dni,
+        apellidos_nombres,
+        genero,
+        fecha_nac,
+        direccion,
+        correo,
+        telefono,
+        discapacidad,
+        id_sede,
+        id_rol,
+        id_periodo_registro,
+        id_programa_estudios,
+        estado
+    } = fields;
+
+    if (dni === '' || dni.length > 20) {
+        Swal.fire({
+            type: 'error',
+            title: 'Error',
+            text: 'El DNI es obligatorio y no debe exceder 20 caracteres.',
+            confirmButtonClass: 'btn btn-confirm mt-2'
         });
-        json = await respuesta.json();
-        if (json.status) {
-            $('.modal_permisos' + id).modal('hide');
-            Swal.fire({
-                type: 'success',
-                title: 'Actualizar',
-                text: json.mensaje,
-                confirmButtonClass: 'btn btn-confirm mt-2',
-                footer: '',
-                timer: 1000
-            });
-        } else if (json.msg == "Error_Sesion") {
-            alerta_sesion();
-        } else {
-            Swal.fire({
-                type: 'error',
-                title: 'Error',
-                text: json.mensaje,
-                confirmButtonClass: 'btn btn-confirm mt-2',
-                footer: '',
-                timer: 1000
-            })
-        }
-        //console.log(json);
-    } catch (e) {
-        console.log("Error al actualizar periodo" + e);
+        return false;
     }
+    if (apellidos_nombres === '' || apellidos_nombres.length > 125) {
+        Swal.fire({
+            type: 'error',
+            title: 'Error',
+            text: 'Los apellidos y nombres son obligatorios y no deben exceder 125 caracteres.',
+            confirmButtonClass: 'btn btn-confirm mt-2'
+        });
+        return false;
+    }
+    if (!['M', 'F'].includes(genero)) {
+        Swal.fire({
+            type: 'error',
+            title: 'Error',
+            text: 'Seleccione un género válido.',
+            confirmButtonClass: 'btn btn-confirm mt-2'
+        });
+        return false;
+    }
+    if (fecha_nac === '') {
+        Swal.fire({
+            type: 'error',
+            title: 'Error',
+            text: 'La fecha de nacimiento es obligatoria.',
+            confirmButtonClass: 'btn btn-confirm mt-2'
+        });
+        return false;
+    }
+    if (direccion === '' || direccion.length > 200) {
+        Swal.fire({
+            type: 'error',
+            title: 'Error',
+            text: 'La dirección es obligatoria y no debe exceder 200 caracteres.',
+            confirmButtonClass: 'btn btn-confirm mt-2'
+        });
+        return false;
+    }
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (correo === '' || correo.length > 100 || !emailPattern.test(correo)) {
+        Swal.fire({
+            type: 'error',
+            title: 'Error',
+            text: 'El correo es obligatorio, no debe exceder 100 caracteres y debe ser válido.',
+            confirmButtonClass: 'btn btn-confirm mt-2'
+        });
+        return false;
+    }
+    if (telefono === '' || telefono.length > 15 || !/^[\d\s-]+$/.test(telefono)) {
+        Swal.fire({
+            type: 'error',
+            title: 'Error',
+            text: 'El teléfono es obligatorio, no debe exceder 15 caracteres y solo puede contener dígitos, espacios o guiones.',
+            confirmButtonClass: 'btn btn-confirm mt-2'
+        });
+        return false;
+    }
+    if (!['SI', 'NO'].includes(discapacidad)) {
+        Swal.fire({
+            type: 'error',
+            title: 'Error',
+            text: 'Seleccione una opción válida para discapacidad (“SI” o “NO”).',
+            confirmButtonClass: 'btn btn-confirm mt-2'
+        });
+        return false;
+    }
+    if (id_sede === '') {
+        Swal.fire({
+            type: 'error',
+            title: 'Error',
+            text: 'Seleccione una sede.',
+            confirmButtonClass: 'btn btn-confirm mt-2'
+        });
+        return false;
+    }
+    const rolesPermitidos = new Set(["1", "2", "3", "4", "5", "6"]);
+    if (!rolesPermitidos.has(id_rol.toString())) {
+        Swal.fire({
+            type: 'error',
+            title: 'Error',
+            text: 'Seleccione un rol válido (Administrador o Docente).',
+            confirmButtonClass: 'btn btn-confirm mt-2'
+        });
+        return false;
+    }
+    if (id_periodo_registro === '') {
+        Swal.fire({
+            type: 'error',
+            title: 'Error',
+            text: 'Seleccione un período académico.',
+            confirmButtonClass: 'btn btn-confirm mt-2'
+        });
+        return false;
+    }
+    if (id_programa_estudios === '') {
+        Swal.fire({
+            type: 'error',
+            title: 'Error',
+            text: 'Seleccione un programa de estudio.',
+            confirmButtonClass: 'btn btn-confirm mt-2'
+        });
+        return false;
+    }
+    if (typeof estado !== 'undefined' && !['1', '0'].includes(estado)) {
+        Swal.fire({
+            type: 'error',
+            title: 'Error',
+            text: 'Seleccione un estado válido.',
+            confirmButtonClass: 'btn btn-confirm mt-2'
+        });
+        return false;
+    }
+    return true;
 }
 
-// ----------------------------------------------------- FIN FUNCIONES PERMISOS--------------------------------------------------------

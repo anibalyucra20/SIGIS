@@ -11,6 +11,16 @@ class SedeModel
         $this->conexion = $this->conexion->connect();
     }
 
+    public function listarSedesSimple()
+    {
+        $sedes = [];
+        $sql = "SELECT id, nombre FROM sigi_sedes ORDER BY nombre";
+        $res = $this->conexion->query($sql);
+        while ($fila = $res->fetch_object()) {
+            $sedes[] = $fila;
+        }
+        return $sedes;
+    }
     public function buscarSedes()
     {
         $arrRespuesta = array();

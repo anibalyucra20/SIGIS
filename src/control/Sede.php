@@ -22,7 +22,7 @@ if ($tipo == "listar") {
             // recorremos el array para agregar las opciones
             for ($i = 0; $i < count($arr_Sedes); $i++) {
                 $id_responsable = $arr_Sedes[$i]->responsable;
-                $arr_Usuario = $objUsuario->buscarUsuarioById($id_responsable);
+                $arr_Usuario = $objUsuario->obtenerUsuarioPorId($id_responsable);
                 $arr_Sedes[$i]->nombre_responsable = $arr_Usuario->apellidos_nombres;
 
                 $id_periodo = $arr_Sedes[$i]->id;

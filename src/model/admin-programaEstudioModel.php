@@ -11,6 +11,16 @@ class ProgramaEstudioModel
         $this->conexion = $this->conexion->connect();
     }
 
+    public function listarProgramasSimple()
+    {
+        $programas = [];
+        $sql = "SELECT id, nombre FROM sigi_programa_estudios ORDER BY nombre";
+        $res = $this->conexion->query($sql);
+        while ($fila = $res->fetch_object()) {
+            $programas[] = $fila;
+        }
+        return $programas;
+    }
     public function buscarProgramaEstudios()
     {
         $arrRespuesta = array();

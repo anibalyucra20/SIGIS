@@ -5,7 +5,7 @@ $tipo = $_REQUEST['tipo'];
 
 //instanciar la clase  model
 $objSesion = new SessionModel();
-$objRol = new RolModel();
+$objRol = new RolesModel();
 
 //variables de sesion
 $id_sesion = $_POST['sesion'];
